@@ -4,6 +4,7 @@ vendor/bundle/
 
 # Build
 web/dist/
+*.tsbuildinfo
 api/tmp/
 api/log/
 
