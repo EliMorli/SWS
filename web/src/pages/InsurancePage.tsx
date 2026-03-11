@@ -1,24 +1,31 @@
-import { useQuery } from '@tanstack/react-query'
-import { fetchInsurancePolicies } from '../lib/api'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { fetchInsurancePolicies, apiCreateInsurancePolicy } from '../lib/api'
 import { formatCurrency, formatDate, statusColor, policyTypeLabel } from '../lib/format'
 import { Shield, AlertTriangle, CheckCircle2 } from 'lucide-react'
-
-const MOCK_POLICIES = [
-  { id: '1', company_name: 'Southwest Stucco, Inc.', policy_type: 'general_liability', policy_number: 'GL-2025-SWS-001', carrier: 'State Farm', effective_date: '2025-07-01', expiry_date: '2026-07-01', coverage_amount: 2000000, status: 'active', days_until_expiry: 112, expiring_soon: false },
-  { id: '2', company_name: 'Southwest Stucco, Inc.', policy_type: 'workers_comp', policy_number: 'WC-2025-SWS-001', carrier: 'State Compensation Insurance Fund', effective_date: '2025-07-01', expiry_date: '2026-07-01', coverage_amount: 1000000, status: 'active', days_until_expiry: 112, expiring_soon: false },
-  { id: '3', company_name: 'Southwest Stucco, Inc.', policy_type: 'auto', policy_number: 'AU-2025-SWS-001', carrier: 'Progressive Commercial', effective_date: '2025-09-01', expiry_date: '2026-09-01', coverage_amount: 1000000, status: 'active', days_until_expiry: 174, expiring_soon: false },
-  { id: '4', company_name: 'Southwest Stucco, Inc.', policy_type: 'ocip', policy_number: 'OCIP-HTF-2022', carrier: 'Hartford / Intergulf OCIP', effective_date: '2022-03-01', expiry_date: '2026-12-31', coverage_amount: 5000000, status: 'active', days_until_expiry: 295, expiring_soon: false },
-]
+import Modal from '../components/ui/Modal'
 
 export default function InsurancePage() {
+  const queryClient = useQueryClient()
+  const [showNew, setShowNew] = useState(false)
+
   const { data } = useQuery({
     queryKey: ['insurance'],
     queryFn: fetchInsurancePolicies,
   })
 
-  const policies = data || MOCK_POLICIES
+  const policies = data || []
   const activeCount = policies.filter(p => p.status === 'active').length
-  const expiringCount = policies.filter(p => p.expiring_soon).length
+  const expiringCount = policies.filter(p => p.expiring_soon || p.status === 'expiring_soon').length
+
+  const createMutation = useMutation({
+    mutationFn: apiCreateInsurancePolicy,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['insurance'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      setShowNew(false)
+    },
+  })
 
   return (
     <div>
@@ -27,8 +34,8 @@ export default function InsurancePage() {
           <h1 className="text-2xl font-bold text-sws-navy">Insurance & Compliance</h1>
           <p className="text-sm text-gray-500">Policy vault and COI management</p>
         </div>
-        <button className="btn-gold flex items-center gap-2">
-          <Shield size={16} /> Generate COI
+        <button className="btn-gold flex items-center gap-2" onClick={() => setShowNew(true)}>
+          <Shield size={16} /> Add Policy
         </button>
       </div>
 
@@ -130,6 +137,80 @@ export default function InsurancePage() {
           <li>Auto-alerts at 60, 30, and 15 days before expiry</li>
         </ul>
       </div>
+
+      {/* Add Policy Modal */}
+      <Modal open={showNew} onClose={() => setShowNew(false)} title="Add Insurance Policy">
+        <NewPolicyForm
+          onSubmit={(data) => createMutation.mutate(data)}
+          loading={createMutation.isPending}
+        />
+      </Modal>
     </div>
+  )
+}
+
+function NewPolicyForm({ onSubmit, loading }: {
+  onSubmit: (data: { policy_type: string; policy_number: string; carrier: string; effective_date: string; expiry_date: string; coverage_amount: number }) => void
+  loading: boolean
+}) {
+  const [form, setForm] = useState({
+    policy_type: 'general_liability',
+    policy_number: '',
+    carrier: '',
+    effective_date: '',
+    expiry_date: '',
+    coverage_amount: '',
+  })
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault()
+      onSubmit({ ...form, coverage_amount: parseFloat(form.coverage_amount) || 0 })
+    }} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Policy Type</label>
+        <select className="input" value={form.policy_type}
+          onChange={e => setForm(f => ({ ...f, policy_type: e.target.value }))}>
+          <option value="general_liability">General Liability</option>
+          <option value="workers_comp">Workers' Comp</option>
+          <option value="auto">Auto/Commercial</option>
+          <option value="ocip">OCIP/CIP</option>
+        </select>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Policy Number</label>
+          <input type="text" required className="input" placeholder="GL-2025-001"
+            value={form.policy_number} onChange={e => setForm(f => ({ ...f, policy_number: e.target.value }))} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Carrier</label>
+          <input type="text" required className="input" placeholder="State Farm"
+            value={form.carrier} onChange={e => setForm(f => ({ ...f, carrier: e.target.value }))} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Effective Date</label>
+          <input type="date" required className="input"
+            value={form.effective_date} onChange={e => setForm(f => ({ ...f, effective_date: e.target.value }))} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+          <input type="date" required className="input"
+            value={form.expiry_date} onChange={e => setForm(f => ({ ...f, expiry_date: e.target.value }))} />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Coverage Amount ($)</label>
+        <input type="number" required step="1" min="0" className="input" placeholder="2000000"
+          value={form.coverage_amount} onChange={e => setForm(f => ({ ...f, coverage_amount: e.target.value }))} />
+      </div>
+      <div className="flex justify-end gap-3 pt-2">
+        <button type="submit" disabled={loading} className="btn-primary">
+          {loading ? 'Adding...' : 'Add Policy'}
+        </button>
+      </div>
+    </form>
   )
 }

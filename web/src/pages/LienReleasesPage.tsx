@@ -1,64 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { fetchLienReleases } from '../lib/api'
+import { fetchLienReleases, apiCreateLienRelease } from '../lib/api'
 import { formatCurrency, formatDate, statusColor, releaseTypeLabel } from '../lib/format'
 import { ArrowLeft, ScrollText, FileSignature, Download, AlertTriangle } from 'lucide-react'
-
-const MOCK_RELEASES = (() => {
-  const releases = []
-  // 9 paid invoices = 18 SWS releases (conditional + unconditional each)
-  for (let i = 1; i <= 9; i++) {
-    releases.push({
-      id: `cond-${i}`,
-      project_id: 'h',
-      invoice_number: `745${i + 1}`,
-      company_name: 'Southwest Stucco, Inc.',
-      release_type: 'conditional_waiver',
-      direction: 'outgoing',
-      amount: [137025, 116775, 129600, 103500, 118800, 97200, 113400, 85500, 114094.98][i - 1],
-      through_date: `202${i <= 4 ? '2' : '3'}-${String((i * 2 + 4) % 12 + 1).padStart(2, '0')}-28`,
-      status: 'signed',
-      signed_date: `202${i <= 4 ? '2' : '3'}-${String((i * 2 + 4) % 12 + 1).padStart(2, '0')}-15`,
-      notes: null,
-      created_at: `202${i <= 4 ? '2' : '3'}-${String((i * 2 + 4) % 12 + 1).padStart(2, '0')}-15`,
-    })
-    releases.push({
-      id: `uncond-${i}`,
-      project_id: 'h',
-      invoice_number: `745${i + 1}`,
-      company_name: 'Southwest Stucco, Inc.',
-      release_type: 'unconditional_waiver',
-      direction: 'outgoing',
-      amount: [137025, 116775, 129600, 103500, 118800, 97200, 113400, 85500, 114094.98][i - 1],
-      through_date: `202${i <= 4 ? '2' : '3'}-${String((i * 2 + 5) % 12 + 1).padStart(2, '0')}-20`,
-      status: 'signed',
-      signed_date: `202${i <= 4 ? '2' : '3'}-${String((i * 2 + 5) % 12 + 1).padStart(2, '0')}-23`,
-      notes: null,
-      created_at: `202${i <= 4 ? '2' : '3'}-${String((i * 2 + 5) % 12 + 1).padStart(2, '0')}-20`,
-    })
-  }
-  // 6 L&W Supply incoming releases
-  for (let i = 1; i <= 6; i++) {
-    releases.push({
-      id: `lw-${i}`,
-      project_id: 'h',
-      invoice_number: `745${i + 1}`,
-      company_name: 'L&W Supply',
-      release_type: 'conditional_waiver',
-      direction: 'incoming',
-      amount: [47959, 40871, 45360, 36225, 41580, 34020][i - 1],
-      through_date: `202${i <= 4 ? '2' : '3'}-${String((i * 2 + 4) % 12 + 1).padStart(2, '0')}-28`,
-      status: 'received',
-      signed_date: null,
-      notes: null,
-      created_at: `202${i <= 4 ? '2' : '3'}-${String((i * 2 + 4) % 12 + 1).padStart(2, '0')}-15`,
-    })
-  }
-  return releases
-})()
+import Modal from '../components/ui/Modal'
 
 export default function LienReleasesPage() {
   const { id } = useParams<{ id: string }>()
+  const queryClient = useQueryClient()
+  const [showNew, setShowNew] = useState(false)
 
   const { data } = useQuery({
     queryKey: ['lien-releases', id],
@@ -66,9 +17,18 @@ export default function LienReleasesPage() {
     enabled: !!id,
   })
 
-  const releases = data || MOCK_RELEASES
+  const releases = data || []
   const outgoing = releases.filter(r => r.direction === 'outgoing')
   const incoming = releases.filter(r => r.direction === 'incoming')
+
+  const createMutation = useMutation({
+    mutationFn: (input: Parameters<typeof apiCreateLienRelease>[1]) =>
+      apiCreateLienRelease(id!, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lien-releases', id] })
+      setShowNew(false)
+    },
+  })
 
   return (
     <div>
@@ -79,9 +39,9 @@ export default function LienReleasesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-sws-navy">Lien Release Tracking</h1>
-            <p className="text-sm text-gray-500">495 Hartford Apartments - California Compliance</p>
+            <p className="text-sm text-gray-500">California Compliance</p>
           </div>
-          <button className="btn-gold flex items-center gap-2">
+          <button className="btn-gold flex items-center gap-2" onClick={() => setShowNew(true)}>
             <ScrollText size={16} /> Generate Release
           </button>
         </div>
@@ -193,6 +153,90 @@ export default function LienReleasesPage() {
           </table>
         </div>
       </div>
+
+      {/* New Release Modal */}
+      <Modal open={showNew} onClose={() => setShowNew(false)} title="Generate Lien Release">
+        <NewReleaseForm
+          onSubmit={(data) => createMutation.mutate(data)}
+          loading={createMutation.isPending}
+        />
+      </Modal>
     </div>
+  )
+}
+
+function NewReleaseForm({ onSubmit, loading }: {
+  onSubmit: (data: { release_type: string; direction: string; amount: number; invoice_number?: string; company_name?: string; through_date: string }) => void
+  loading: boolean
+}) {
+  const [form, setForm] = useState({
+    release_type: 'conditional_waiver',
+    direction: 'outgoing',
+    amount: '',
+    invoice_number: '',
+    company_name: '',
+    through_date: new Date().toISOString().split('T')[0],
+  })
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault()
+      onSubmit({
+        release_type: form.release_type,
+        direction: form.direction,
+        amount: parseFloat(form.amount) || 0,
+        invoice_number: form.invoice_number || undefined,
+        company_name: form.direction === 'incoming' ? form.company_name : undefined,
+        through_date: form.through_date,
+      })
+    }} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <select className="input" value={form.release_type}
+            onChange={e => setForm(f => ({ ...f, release_type: e.target.value }))}>
+            <option value="conditional_waiver">Conditional</option>
+            <option value="unconditional_waiver">Unconditional</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Direction</label>
+          <select className="input" value={form.direction}
+            onChange={e => setForm(f => ({ ...f, direction: e.target.value }))}>
+            <option value="outgoing">Outgoing (SWS to GC)</option>
+            <option value="incoming">Incoming (Sub to SWS)</option>
+          </select>
+        </div>
+      </div>
+      {form.direction === 'incoming' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+          <input type="text" required className="input" placeholder="e.g. L&W Supply"
+            value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} />
+        </div>
+      )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+        <input type="number" required step="0.01" min="0" className="input" placeholder="85000.00"
+          value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Invoice # (optional)</label>
+          <input type="text" className="input" placeholder="7462"
+            value={form.invoice_number} onChange={e => setForm(f => ({ ...f, invoice_number: e.target.value }))} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Through Date</label>
+          <input type="date" required className="input"
+            value={form.through_date} onChange={e => setForm(f => ({ ...f, through_date: e.target.value }))} />
+        </div>
+      </div>
+      <div className="flex justify-end gap-3 pt-2">
+        <button type="submit" disabled={loading} className="btn-primary">
+          {loading ? 'Creating...' : 'Generate Release'}
+        </button>
+      </div>
+    </form>
   )
 }

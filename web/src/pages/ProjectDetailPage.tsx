@@ -3,82 +3,10 @@ import { Link, useParams } from 'react-router-dom'
 import { fetchProjectDashboard } from '../lib/api'
 import { formatCurrency, formatPercent, statusColor } from '../lib/format'
 import {
-  ArrowLeft, FileText, GitPullRequest, ScrollText, DollarSign,
-  TrendingUp, PieChart, Layers
+  ArrowLeft, FileText, GitPullRequest, ScrollText,
+  PieChart, Layers
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-
-const MOCK_PROJECT_DASHBOARD = {
-  project: {
-    id: 'hartford-001',
-    name: '495 Hartford Apartments',
-    project_number: 'HTF-2022-001',
-    address: '1441 W. 5th Street, Los Angeles, CA, 90017',
-    gc_name: 'Fassberg Construction Company',
-    owner_name: 'Intergulf Development',
-    architect_name: 'IBI Group',
-    status: 'active',
-    trade: 'CSI 09-200 Lath & Plaster',
-    original_contract: 865000.00,
-    revised_contract: 1133005.20,
-    total_billed: 1157965.20,
-    total_paid: 966182.81,
-    outstanding: 191782.39,
-    retention_pct: 10.0,
-    total_wall_sqyds: 13827.78,
-    total_ceiling_sqyds: 1863.00,
-    total_area_sqyds: 15690.78,
-    start_date: '2022-03-15',
-  },
-  phases: [
-    { id: '1', name: 'Scaffold', billing_pct: 0, completion_pct: 100, status: 'complete' },
-    { id: '2', name: 'Lath', billing_pct: 35, completion_pct: 100, status: 'complete' },
-    { id: '3', name: 'Scratch', billing_pct: 20, completion_pct: 100, status: 'complete' },
-    { id: '4', name: 'Brown', billing_pct: 25, completion_pct: 85, status: 'in_progress' },
-    { id: '5', name: 'Color', billing_pct: 20, completion_pct: 40, status: 'in_progress' },
-  ],
-  billing_summary: {
-    original_contract: 865000.00,
-    approved_cos: 268005.20,
-    revised_contract: 1133005.20,
-    total_billed: 1157965.20,
-    total_paid: 966182.81,
-    outstanding: 191782.39,
-    retention_held: 115796.52,
-  },
-  recent_invoices: [
-    { id: '10', invoice_number: '7461', pay_app_number: 10, current_payment_due: 29193.75, status: 'submitted', invoice_date: '2024-09-15' },
-    { id: '9', invoice_number: '7460', pay_app_number: 9, current_payment_due: 114094.98, status: 'paid', invoice_date: '2024-05-15' },
-    { id: '8', invoice_number: '7459', pay_app_number: 8, current_payment_due: 85500.00, status: 'paid', invoice_date: '2024-01-15' },
-  ],
-  change_orders: Array.from({ length: 12 }, (_, i) => ({
-    id: String(i + 1),
-    co_number: i + 1,
-    title: [
-      'Additional waterproofing at balconies', 'Extra lath at modified wall sections',
-      'Added ceiling scope - Building B corridors', 'Revised scratch coat specification',
-      'Extended scaffold rental - weather delays', 'Additional masking at storefront glazing',
-      'XJ-15 additive scope increase', 'Drip edge at revised parapet details',
-      'Color coat revision - Sherwin-Williams spec change', 'Additional brown coat at mechanical screen walls',
-      'Elastomeric crack system upgrade', 'Final scope additions - rooftop amenity walls'
-    ][i],
-    amount: [24500, 18200, 42800, 15600, 31400, 12300, 19800, 8900, 28500, 22100, 26400, 17505.20][i],
-    status: 'approved',
-  })),
-  cost_summary: {
-    by_category: {
-      material: 50810.68,
-      labor_own: 102500.00,
-      labor_sub: 17300.00,
-      equipment: 6200.00,
-      scaffold: 15800.00,
-      overhead: 9500.00,
-    },
-    total: 202110.68,
-    budget: 1133005.20,
-    margin: 82.2,
-  },
-}
 
 const CATEGORY_LABELS: Record<string, string> = {
   material: 'Material',
@@ -94,13 +22,14 @@ const COST_COLORS = ['#0d1b2a', '#1b3a5c', '#f0a500', '#2563eb', '#16a34a', '#6b
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
 
-  const { data } = useQuery({
+  const { data: dash } = useQuery({
     queryKey: ['project-dashboard', id],
     queryFn: () => fetchProjectDashboard(id!),
     enabled: !!id,
   })
 
-  const dash = data || MOCK_PROJECT_DASHBOARD
+  if (!dash) return <div className="text-center py-12 text-gray-400">Loading...</div>
+
   const project = dash.project
   const billing = dash.billing_summary
 
@@ -125,8 +54,8 @@ export default function ProjectDetailPage() {
             <p className="text-sm text-gray-500 mt-1">{project.address}</p>
             <div className="flex gap-4 mt-2 text-sm text-gray-500">
               <span>GC: <strong className="text-gray-700">{project.gc_name}</strong></span>
-              <span>Owner: <strong className="text-gray-700">{project.owner_name}</strong></span>
-              <span>Architect: <strong className="text-gray-700">{project.architect_name}</strong></span>
+              {project.owner_name && <span>Owner: <strong className="text-gray-700">{project.owner_name}</strong></span>}
+              {project.architect_name && <span>Architect: <strong className="text-gray-700">{project.architect_name}</strong></span>}
             </div>
           </div>
         </div>
@@ -198,11 +127,13 @@ export default function ProjectDetailPage() {
               </div>
             ))}
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
-            <span className="text-sm text-gray-500">Total Area:</span>
-            <span className="text-sm font-semibold">{project.total_area_sqyds?.toLocaleString()} sq yds</span>
-            <span className="text-xs text-gray-400">({project.total_wall_sqyds?.toLocaleString()} walls + {project.total_ceiling_sqyds?.toLocaleString()} ceilings)</span>
-          </div>
+          {project.total_area_sqyds && (
+            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
+              <span className="text-sm text-gray-500">Total Area:</span>
+              <span className="text-sm font-semibold">{project.total_area_sqyds?.toLocaleString()} sq yds</span>
+              <span className="text-xs text-gray-400">({project.total_wall_sqyds?.toLocaleString()} walls + {project.total_ceiling_sqyds?.toLocaleString()} ceilings)</span>
+            </div>
+          )}
         </div>
 
         {/* Job Cost Summary */}
@@ -248,26 +179,30 @@ export default function ProjectDetailPage() {
             <h2 className="text-lg font-semibold text-sws-navy">Recent Pay Applications</h2>
             <Link to={`/projects/${id}/billing`} className="text-sm text-sws-gold hover:underline">View All</Link>
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-gray-400 uppercase border-b">
-                <th className="pb-2">#</th>
-                <th className="pb-2">Invoice</th>
-                <th className="pb-2">Amount Due</th>
-                <th className="pb-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dash.recent_invoices.map((inv) => (
-                <tr key={inv.id} className="border-b border-gray-50">
-                  <td className="py-2 font-medium">Pay App {inv.pay_app_number}</td>
-                  <td className="py-2">#{inv.invoice_number}</td>
-                  <td className="py-2 font-semibold">{formatCurrency(inv.current_payment_due)}</td>
-                  <td className="py-2"><span className={`badge ${statusColor(inv.status)}`}>{inv.status}</span></td>
+          {dash.recent_invoices.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-4">No invoices yet</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-400 uppercase border-b">
+                  <th className="pb-2">#</th>
+                  <th className="pb-2">Invoice</th>
+                  <th className="pb-2">Amount Due</th>
+                  <th className="pb-2">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {dash.recent_invoices.map((inv) => (
+                  <tr key={inv.id} className="border-b border-gray-50">
+                    <td className="py-2 font-medium">Pay App {inv.pay_app_number}</td>
+                    <td className="py-2">#{inv.invoice_number}</td>
+                    <td className="py-2 font-semibold">{formatCurrency(inv.current_payment_due)}</td>
+                    <td className="py-2"><span className={`badge ${statusColor(inv.status)}`}>{inv.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Change Orders */}
@@ -276,26 +211,32 @@ export default function ProjectDetailPage() {
             <h2 className="text-lg font-semibold text-sws-navy">Change Orders</h2>
             <Link to={`/projects/${id}/change-orders`} className="text-sm text-sws-gold hover:underline">View All</Link>
           </div>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {dash.change_orders.map((co) => (
-              <div key={co.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-sws-gold">CO {co.co_number}</span>
-                  <span className="text-sm">{co.title}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">{formatCurrency(co.amount)}</span>
-                  <span className={`badge ${statusColor(co.status)}`}>{co.status}</span>
-                </div>
+          {dash.change_orders.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-4">No change orders yet</p>
+          ) : (
+            <>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {dash.change_orders.map((co) => (
+                  <div key={co.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-sws-gold">CO {co.co_number}</span>
+                      <span className="text-sm">{co.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{formatCurrency(co.amount)}</span>
+                      <span className={`badge ${statusColor(co.status)}`}>{co.status}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-sm">
-            <span className="text-gray-500">Total Change Orders</span>
-            <span className="font-bold text-sws-gold">
-              {formatCurrency(dash.change_orders.reduce((sum, co) => sum + co.amount, 0))}
-            </span>
-          </div>
+              <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-sm">
+                <span className="text-gray-500">Total Change Orders</span>
+                <span className="font-bold text-sws-gold">
+                  {formatCurrency(dash.change_orders.reduce((sum, co) => sum + co.amount, 0))}
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

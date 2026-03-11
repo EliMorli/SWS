@@ -1,55 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { fetchInvoices } from '../lib/api'
+import { fetchInvoices, apiCreateInvoice, apiSubmitInvoice, apiRecordPayment } from '../lib/api'
 import { formatCurrency, formatDate, statusColor } from '../lib/format'
-import { ArrowLeft, FileText, Download, Send } from 'lucide-react'
-
-const MOCK_INVOICES = Array.from({ length: 10 }, (_, i) => {
-  const payAppData = [
-    { inv: '7452', date: '2022-06-15', thisPeriod: 152250.00, total: 152250.00, paid: 137025.00, status: 'paid' },
-    { inv: '7453', date: '2022-08-15', thisPeriod: 129750.00, total: 282000.00, paid: 116775.00, status: 'paid' },
-    { inv: '7454', date: '2022-10-15', thisPeriod: 144000.00, total: 426000.00, paid: 129600.00, status: 'paid' },
-    { inv: '7455', date: '2023-01-15', thisPeriod: 115000.00, total: 541000.00, paid: 103500.00, status: 'paid' },
-    { inv: '7456', date: '2023-04-15', thisPeriod: 132000.00, total: 673000.00, paid: 118800.00, status: 'paid' },
-    { inv: '7457', date: '2023-07-15', thisPeriod: 108000.00, total: 781000.00, paid: 97200.00, status: 'paid' },
-    { inv: '7458', date: '2023-10-15', thisPeriod: 126000.00, total: 907000.00, paid: 113400.00, status: 'paid' },
-    { inv: '7459', date: '2024-01-15', thisPeriod: 95000.00, total: 1002000.00, paid: 85500.00, status: 'paid' },
-    { inv: '7460', date: '2024-05-15', thisPeriod: 126772.20, total: 1128772.20, paid: 114094.98, status: 'paid' },
-    { inv: '7461', date: '2024-09-15', thisPeriod: 29193.00, total: 1157965.20, paid: 0, status: 'submitted' },
-  ][i]
-
-  return {
-    id: String(i + 1),
-    project_id: 'hartford-001',
-    invoice_number: payAppData.inv,
-    pay_app_number: i + 1,
-    period_from: payAppData.date,
-    period_to: payAppData.date,
-    invoice_date: payAppData.date,
-    original_contract: 865000.00,
-    change_order_total: 268005.20,
-    contract_total: 1133005.20,
-    completed_previous: i > 0 ? [0, 152250, 282000, 426000, 541000, 673000, 781000, 907000, 1002000, 1128772.20][i] : 0,
-    completed_this_period: payAppData.thisPeriod,
-    materials_stored: 0,
-    total_completed: payAppData.total,
-    retention_held: payAppData.total * 0.10,
-    total_earned_less_retention: payAppData.total * 0.90,
-    less_previous_certificates: 0,
-    current_payment_due: payAppData.thisPeriod * 0.90,
-    amount_paid: payAppData.paid,
-    paid_date: payAppData.status === 'paid' ? payAppData.date : null,
-    check_number: payAppData.status === 'paid' ? `${10000 + i + 1}` : null,
-    status: payAppData.status,
-    days_outstanding: payAppData.status === 'submitted' ? 178 : 0,
-    overdue: payAppData.status === 'submitted',
-    submitted_at: payAppData.date,
-    notes: null,
-  }
-})
+import { ArrowLeft, FileText, Download, Send, DollarSign } from 'lucide-react'
+import Modal from '../components/ui/Modal'
 
 export default function BillingPage() {
   const { id } = useParams<{ id: string }>()
+  const queryClient = useQueryClient()
+  const [showNewInvoice, setShowNewInvoice] = useState(false)
+  const [paymentInvoice, setPaymentInvoice] = useState<string | null>(null)
 
   const { data } = useQuery({
     queryKey: ['invoices', id],
@@ -57,11 +18,37 @@ export default function BillingPage() {
     enabled: !!id,
   })
 
-  const invoices = data || MOCK_INVOICES
+  const invoices = data || []
+
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ['invoices', id] })
+    queryClient.invalidateQueries({ queryKey: ['project-dashboard', id] })
+    queryClient.invalidateQueries({ queryKey: ['projects'] })
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+  }
+
+  const createMutation = useMutation({
+    mutationFn: (input: { completed_this_period: number; invoice_date: string }) =>
+      apiCreateInvoice(id!, input),
+    onSuccess: () => { invalidateAll(); setShowNewInvoice(false) },
+  })
+
+  const submitMutation = useMutation({
+    mutationFn: apiSubmitInvoice,
+    onSuccess: invalidateAll,
+  })
+
+  const paymentMutation = useMutation({
+    mutationFn: ({ invoiceId, ...input }: { invoiceId: string; amount: number; check_number: string }) =>
+      apiRecordPayment(invoiceId, input),
+    onSuccess: () => { invalidateAll(); setPaymentInvoice(null) },
+  })
 
   const totalBilled = invoices.reduce((sum, inv) => sum + inv.completed_this_period, 0)
   const totalPaid = invoices.reduce((sum, inv) => sum + inv.amount_paid, 0)
   const totalRetention = invoices.length > 0 ? invoices[invoices.length - 1].retention_held : 0
+
+  const payInv = paymentInvoice ? invoices.find(i => i.id === paymentInvoice) : null
 
   return (
     <div>
@@ -72,9 +59,9 @@ export default function BillingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-sws-navy">Billing & Pay Applications</h1>
-            <p className="text-sm text-gray-500">495 Hartford Apartments - AIA G702/G703</p>
+            <p className="text-sm text-gray-500">AIA G702/G703</p>
           </div>
-          <button className="btn-gold flex items-center gap-2">
+          <button className="btn-gold flex items-center gap-2" onClick={() => setShowNewInvoice(true)}>
             <FileText size={16} /> New Pay Application
           </button>
         </div>
@@ -141,8 +128,21 @@ export default function BillingPage() {
                         <Download size={14} />
                       </button>
                       {inv.status === 'draft' && (
-                        <button className="p-1.5 text-gray-400 hover:text-blue-600 rounded" title="Submit">
+                        <button
+                          className="p-1.5 text-gray-400 hover:text-blue-600 rounded"
+                          title="Submit"
+                          onClick={() => submitMutation.mutate(inv.id)}
+                        >
                           <Send size={14} />
+                        </button>
+                      )}
+                      {(inv.status === 'submitted' || inv.status === 'approved') && inv.amount_paid === 0 && (
+                        <button
+                          className="p-1.5 text-gray-400 hover:text-green-600 rounded"
+                          title="Record Payment"
+                          onClick={() => setPaymentInvoice(inv.id)}
+                        >
+                          <DollarSign size={14} />
                         </button>
                       )}
                     </div>
@@ -153,6 +153,82 @@ export default function BillingPage() {
           </table>
         </div>
       </div>
+
+      {/* New Pay App Modal */}
+      <Modal open={showNewInvoice} onClose={() => setShowNewInvoice(false)} title="New Pay Application">
+        <NewInvoiceForm
+          onSubmit={(data) => createMutation.mutate(data)}
+          loading={createMutation.isPending}
+        />
+      </Modal>
+
+      {/* Record Payment Modal */}
+      <Modal open={!!paymentInvoice} onClose={() => setPaymentInvoice(null)} title="Record Payment">
+        {payInv && (
+          <RecordPaymentForm
+            invoice={payInv}
+            onSubmit={(data) => paymentMutation.mutate({ invoiceId: payInv.id, ...data })}
+            loading={paymentMutation.isPending}
+          />
+        )}
+      </Modal>
     </div>
+  )
+}
+
+function NewInvoiceForm({ onSubmit, loading }: {
+  onSubmit: (data: { completed_this_period: number; invoice_date: string }) => void
+  loading: boolean
+}) {
+  const [amount, setAmount] = useState('')
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit({ completed_this_period: parseFloat(amount) || 0, invoice_date: date }) }} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Completed This Period ($)</label>
+        <input type="number" required step="0.01" min="0" className="input" placeholder="50000.00"
+          value={amount} onChange={e => setAmount(e.target.value)} />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Invoice Date</label>
+        <input type="date" required className="input" value={date} onChange={e => setDate(e.target.value)} />
+      </div>
+      <div className="flex justify-end gap-3 pt-2">
+        <button type="submit" disabled={loading} className="btn-primary">
+          {loading ? 'Creating...' : 'Create Pay App'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function RecordPaymentForm({ invoice, onSubmit, loading }: {
+  invoice: { current_payment_due: number; invoice_number: string }
+  onSubmit: (data: { amount: number; check_number: string }) => void
+  loading: boolean
+}) {
+  const [amount, setAmount] = useState(String(invoice.current_payment_due))
+  const [checkNumber, setCheckNumber] = useState('')
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit({ amount: parseFloat(amount) || 0, check_number: checkNumber }) }} className="space-y-4">
+      <p className="text-sm text-gray-500">Recording payment for Invoice #{invoice.invoice_number}</p>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Payment Amount ($)</label>
+        <input type="number" required step="0.01" min="0" className="input"
+          value={amount} onChange={e => setAmount(e.target.value)} />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Check / Reference Number</label>
+        <input type="text" required className="input" placeholder="e.g. 10042"
+          value={checkNumber} onChange={e => setCheckNumber(e.target.value)} />
+      </div>
+      <div className="flex justify-end gap-3 pt-2">
+        <button type="submit" disabled={loading} className="btn-primary">
+          {loading ? 'Recording...' : 'Record Payment'}
+        </button>
+      </div>
+    </form>
   )
 }
