@@ -148,6 +148,31 @@ export interface DashboardData {
     status: string
     days_outstanding: number
   }>
+  recent_field_updates: Array<{
+    id: string
+    project_name: string
+    sender_name: string
+    message: string
+    photo_thumbnail: string | null
+    source: string
+    created_at: string
+  }>
+}
+
+export interface FieldUpdate {
+  id: string
+  project_id: string
+  sender_name: string
+  sender_role: string
+  message: string
+  photo_url: string | null
+  photo_thumbnail: string | null
+  latitude: number | null
+  longitude: number | null
+  geocoded_address: string | null
+  source: 'telegram' | 'whatsapp' | 'sms' | 'web'
+  auto_matched: boolean
+  created_at: string
 }
 
 export interface ProjectDashboard {

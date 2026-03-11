@@ -4,7 +4,7 @@ import { fetchDashboard, apiResetDemoData } from '../lib/api'
 import { formatCurrency, statusColor } from '../lib/format'
 import {
   DollarSign, FileText, AlertTriangle, Shield, TrendingUp,
-  Clock, ArrowRight, RotateCcw
+  Clock, ArrowRight, RotateCcw, Camera, Send, MessageCircle, Smartphone, Globe
 } from 'lucide-react'
 
 function StatCard({ label, value, icon: Icon, color, sub }: {
@@ -203,6 +203,55 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Field Updates Feed */}
+      <div className="mt-6 card">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Camera size={18} className="text-sws-gold" />
+            <h2 className="text-lg font-semibold text-sws-navy">Recent Field Updates</h2>
+            {dash.recent_field_updates.length > 0 && (
+              <span className="badge badge-blue">{dash.recent_field_updates.length}</span>
+            )}
+          </div>
+        </div>
+        {dash.recent_field_updates.length === 0 ? (
+          <div className="text-center py-6">
+            <Camera size={24} className="text-gray-300 mx-auto mb-2" />
+            <p className="text-sm text-gray-500">No field updates yet</p>
+            <p className="text-xs text-gray-400 mt-1">Updates from Telegram, WhatsApp, and SMS will appear here</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {dash.recent_field_updates.map((fu) => {
+              const SourceIcon = { telegram: Send, whatsapp: MessageCircle, sms: Smartphone, web: Globe }[fu.source] || Globe
+              return (
+                <div key={fu.id} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                  <div className="w-8 h-8 rounded-full bg-sws-navy/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-sws-navy">
+                      {fu.sender_name.split(' ').map(n => n[0]).join('')}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm">{fu.sender_name}</span>
+                      <span className="text-xs text-gray-400">{fu.project_name}</span>
+                      <div className="flex items-center gap-1 text-xs text-gray-400 ml-auto">
+                        <SourceIcon size={10} />
+                        <span>{fu.source}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">{fu.message}</p>
+                    {fu.photo_thumbnail && (
+                      <img src={fu.photo_thumbnail} alt="" className="mt-1 h-16 rounded border border-gray-200" />
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

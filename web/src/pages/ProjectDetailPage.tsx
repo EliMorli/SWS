@@ -7,6 +7,7 @@ import {
   PieChart, Layers
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { FieldUpdatesFeed } from '../components/FieldUpdates'
 
 const CATEGORY_LABELS: Record<string, string> = {
   material: 'Material',
@@ -238,6 +239,11 @@ export default function ProjectDetailPage() {
             </>
           )}
         </div>
+      </div>
+
+      {/* Field Updates */}
+      <div className="mt-6">
+        <FieldUpdatesFeed projectId={id!} />
       </div>
     </div>
   )

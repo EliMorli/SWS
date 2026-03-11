@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { DashboardData, Project, ProjectDashboard, Invoice, ChangeOrder, LienRelease, InsurancePolicy } from '../types'
+import type { DashboardData, Project, ProjectDashboard, Invoice, ChangeOrder, LienRelease, InsurancePolicy, FieldUpdate } from '../types'
 import * as demo from './demoData'
 
 // Demo mode: when no API backend is available, use localStorage-backed data
@@ -187,6 +187,29 @@ export const apiCreateInsurancePolicy = async (input: {
 }): Promise<InsurancePolicy> => {
   if (DEMO_MODE) return demo.createInsurancePolicy(input)
   const { data } = await api.post('/insurance', input)
+  return data
+}
+
+export const fetchFieldUpdates = async (projectId: string): Promise<FieldUpdate[]> => {
+  if (DEMO_MODE) return demo.getFieldUpdates(projectId)
+  const { data } = await api.get(`/projects/${projectId}/field_updates`)
+  return data
+}
+
+export const apiCreateFieldUpdate = async (input: {
+  project_id: string
+  sender_name: string
+  sender_role: string
+  message: string
+  photo_thumbnail: string | null
+  latitude: number | null
+  longitude: number | null
+  geocoded_address: string | null
+  source: 'telegram' | 'whatsapp' | 'sms' | 'web'
+  auto_matched: boolean
+}): Promise<FieldUpdate> => {
+  if (DEMO_MODE) return demo.createFieldUpdate(input)
+  const { data } = await api.post(`/projects/${input.project_id}/field_updates`, input)
   return data
 }
 

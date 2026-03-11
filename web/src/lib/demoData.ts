@@ -1,4 +1,4 @@
-import type { Project, Invoice, ChangeOrder, LienRelease, InsurancePolicy } from '../types'
+import type { Project, Invoice, ChangeOrder, LienRelease, InsurancePolicy, FieldUpdate } from '../types'
 
 const STORAGE_KEY = 'sws_demo_data'
 
@@ -8,6 +8,7 @@ export interface DemoData {
   changeOrders: ChangeOrder[]
   lienReleases: LienRelease[]
   insurancePolicies: InsurancePolicy[]
+  fieldUpdates: FieldUpdate[]
 }
 
 // ─── Seed Data ───────────────────────────────────────────────────────────────
@@ -187,13 +188,69 @@ function seedInsurancePolicies(): InsurancePolicy[] {
   ]
 }
 
+function seedFieldUpdates(): FieldUpdate[] {
+  return [
+    {
+      id: 'fu-1',
+      project_id: 'hartford-001',
+      sender_name: 'Marco R.',
+      sender_role: 'Field Super',
+      message: 'Brown coat on Building A west wall complete. Moving to east side tomorrow. Crew of 6 on site.',
+      photo_url: null,
+      photo_thumbnail: null,
+      latitude: 34.0536,
+      longitude: -118.2658,
+      geocoded_address: '1441 W 5th St, Los Angeles, CA 90017',
+      source: 'telegram',
+      auto_matched: true,
+      created_at: '2024-09-10T14:32:00Z',
+    },
+    {
+      id: 'fu-2',
+      project_id: 'hartford-001',
+      sender_name: 'Aaron S.',
+      sender_role: 'PM',
+      message: 'Fassberg wants revised schedule for color coat phase. Meeting tomorrow at 9am on site.',
+      photo_url: null,
+      photo_thumbnail: null,
+      latitude: null,
+      longitude: null,
+      geocoded_address: null,
+      source: 'web',
+      auto_matched: false,
+      created_at: '2024-09-12T09:15:00Z',
+    },
+    {
+      id: 'fu-3',
+      project_id: 'hartford-001',
+      sender_name: 'Marco R.',
+      sender_role: 'Field Super',
+      message: 'Scaffold issue on north elevation - need engineer signoff before we can proceed to 4th floor. See attached.',
+      photo_url: null,
+      photo_thumbnail: null,
+      latitude: 34.0538,
+      longitude: -118.2655,
+      geocoded_address: '1441 W 5th St, Los Angeles, CA 90017',
+      source: 'telegram',
+      auto_matched: true,
+      created_at: '2024-09-14T11:45:00Z',
+    },
+  ]
+}
+
 // ─── Store Operations ────────────────────────────────────────────────────────
 
 function loadData(): DemoData {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
-      return JSON.parse(stored) as DemoData
+      const parsed = JSON.parse(stored)
+      // Migrate: add fieldUpdates if missing from older stored data
+      if (!parsed.fieldUpdates) {
+        parsed.fieldUpdates = seedFieldUpdates()
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+      }
+      return parsed as DemoData
     }
   } catch { /* corrupted data, re-seed */ }
 
@@ -203,6 +260,7 @@ function loadData(): DemoData {
     changeOrders: seedChangeOrders(),
     lienReleases: seedLienReleases(),
     insurancePolicies: seedInsurancePolicies(),
+    fieldUpdates: seedFieldUpdates(),
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
   return data
@@ -578,6 +636,7 @@ export function getDashboardData() {
     pending_change_orders: pendingCOs,
     expiring_insurance: expiringInsurance,
     overdue_invoices: overdueInvoices,
+    recent_field_updates: getRecentFieldUpdates(),
   }
 }
 
@@ -642,6 +701,58 @@ export function getProjectDashboard(projectId: string) {
       margin: Number((((project.original_contract + approvedTotal - 202110.68) / (project.original_contract + approvedTotal)) * 100).toFixed(1)),
     },
   }
+}
+
+// Field Updates
+export function getFieldUpdates(projectId: string): FieldUpdate[] {
+  return getData().fieldUpdates
+    .filter(fu => fu.project_id === projectId)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+}
+
+export function getAllFieldUpdates(): FieldUpdate[] {
+  return [...getData().fieldUpdates].sort((a, b) => b.created_at.localeCompare(a.created_at))
+}
+
+export function createFieldUpdate(input: {
+  project_id: string
+  sender_name: string
+  sender_role: string
+  message: string
+  photo_thumbnail: string | null
+  latitude: number | null
+  longitude: number | null
+  geocoded_address: string | null
+  source: 'telegram' | 'whatsapp' | 'sms' | 'web'
+  auto_matched: boolean
+}): FieldUpdate {
+  const fu: FieldUpdate = {
+    id: genId(),
+    ...input,
+    photo_url: input.photo_thumbnail,
+    created_at: new Date().toISOString(),
+  }
+  update(d => d.fieldUpdates.push(fu))
+  return fu
+}
+
+function getRecentFieldUpdates() {
+  const data = getData()
+  return [...data.fieldUpdates]
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, 5)
+    .map(fu => {
+      const proj = data.projects.find(p => p.id === fu.project_id)
+      return {
+        id: fu.id,
+        project_name: proj?.name || 'Unknown',
+        sender_name: fu.sender_name,
+        message: fu.message,
+        photo_thumbnail: fu.photo_thumbnail,
+        source: fu.source,
+        created_at: fu.created_at,
+      }
+    })
 }
 
 // Reset to seed data
