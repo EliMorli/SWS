@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWS Operations Platform - Technical Specification v1.0</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Segoe UI, Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+.page { width: 850px; min-height: 1100px; margin: 30px auto; background: white; padding: 60px 70px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); page-break-after: always; }
+.cover { background: linear-gradient(135deg, #0d1b2a 0%, #1b3a5c 50%, #0d1b2a 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 80px 60px; }
+.cover-logo { font-size: 72px; font-weight: 900; color: #f0a500; letter-spacing: 8px; margin-bottom: 10px; }
+.cover-sub { font-size: 18px; color: #a0c4e8; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 60px; }
+.cover-title { font-size: 36px; font-weight: 700; color: white; margin-bottom: 20px; line-height: 1.3; }
+.cover-subtitle { font-size: 18px; color: #f0a500; margin-bottom: 50px; }
+.cover-meta { background: rgba(255,255,255,0.1); border: 1px solid rgba(240,165,0,0.3); border-radius: 8px; padding: 30px 50px; }
+.cover-meta p { font-size: 14px; color: #c0d8f0; margin: 6px 0; }
+.cover-meta span { color: #f0a500; font-weight: 600; }
+h1 { font-size: 28px; color: #0d1b2a; border-bottom: 3px solid #f0a500; padding-bottom: 12px; margin-bottom: 30px; }
+h2 { font-size: 20px; color: #1b3a5c; margin: 28px 0 12px; border-left: 4px solid #f0a500; padding-left: 12px; }
+h3 { font-size: 16px; color: #1b3a5c; margin: 20px 0 8px; }
+p { line-height: 1.7; margin-bottom: 12px; font-size: 14px; }
+ul, ol { margin: 10px 0 15px 25px; }
+li { font-size: 14px; line-height: 1.6; margin-bottom: 4px; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px; }
+th { background: #0d1b2a; color: white; padding: 10px 12px; text-align: left; }
+td { border: 1px solid #dde; padding: 9px 12px; vertical-align: top; }
+tr:nth-child(even) td { background: #f8f9ff; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+.p0 { background: #dc2626; color: white; }
+.p1 { background: #f0a500; color: white; }
+.p2 { background: #2563eb; color: white; }
+.section-header { background: linear-gradient(135deg, #0d1b2a, #1b3a5c); color: white; padding: 15px 25px; border-radius: 6px; margin-bottom: 25px; }
+.section-header h1 { color: white; border: none; margin: 0; font-size: 22px; }
+.section-num { color: #f0a500; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+.callout { background: #fff8e7; border-left: 4px solid #f0a500; padding: 15px 20px; margin: 15px 0; border-radius: 0 6px 6px 0; }
+.toc-entry { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted #ccd; font-size: 14px; }
+.sprint-card { background: #f8f9ff; border: 1px solid #dde; border-radius: 6px; padding: 15px 20px; margin: 10px 0; }
+.arch-box { border: 2px solid #1b3a5c; border-radius: 8px; padding: 15px; margin: 8px; display: inline-block; min-width: 140px; text-align: center; background: white; }
+.arch-box.primary { background: #0d1b2a; color: white; }
+.arch-row { display: flex; justify-content: center; flex-wrap: wrap; margin: 10px 0; }
+.code { font-family: monospace; background: #1e293b; color: #a5f3fc; padding: 15px; border-radius: 6px; font-size: 12px; margin: 10px 0; white-space: pre-wrap; }
+.api-endpoint { background: #f8f9ff; border: 1px solid #dde; border-radius: 4px; padding: 10px 15px; margin: 8px 0; font-family: monospace; font-size: 13px; }
+.method { font-weight: 700; margin-right: 10px; }
+.get { color: #16a34a; } .post { color: #2563eb; } .put { color: #d97706; } .delete { color: #dc2626; }
+@media print { body { background: white; } .page { box-shadow: none; margin: 0; } }
+</style>
+</head>
+<body>
+<div class="page cover">
+<div class="cover-logo">SWS</div>
+<div class="cover-sub">Southwest Stucco, Inc. &mdash; Operations Platform</div>
+<div class="cover-title">Full-Stack Operations Platform<br>Technical Specification</div>
+<div class="cover-subtitle">Version 1.0 &mdash; For Internal Development Team Use Only</div>
+<div class="cover-meta">
+<p>Prepared by: <span>Systems Engineering Team</span></p>
+<p>Project Owner: <span>Aaron Secharia, Southwest Stucco Inc.</span></p>
+<p>License: <span>#702110 | (818) 888-8554</span></p>
+<p>Document Date: <span>March 2026</span></p>
+<p>Status: <span>APPROVED FOR DEVELOPMENT</span></p>
+<p>Active Project Reference: <span>495 Hartford Apartments, 1441 W. 5th St., LA 90017</span></p>
+</div>
+</div>
+<div class="page">
+<h1>Table of Contents</h1>
+<div class="toc-entry"><span><strong>01.</strong> Executive Summary & Business Context</span><span>Page 3</span></div>
+<div class="toc-entry"><span><strong>02.</strong> System Architecture Overview</span><span>Page 4</span></div>
+<div class="toc-entry"><span><strong>03.</strong> Technology Stack & Integrations</span><span>Page 5</span></div>
+<div class="toc-entry"><span><strong>04.</strong> Module 1 - Project Management</span><span>Page 6</span></div>
+<div class="toc-entry"><span><strong>05.</strong> Module 2 - Estimating & Proposals</span><span>Page 7</span></div>
+<div class="toc-entry"><span><strong>06.</strong> Module 3 - Billing & Accounts Receivable</span><span>Page 8</span></div>
+<div class="toc-entry"><span><strong>07.</strong> Module 4 - Change Order Management</span><span>Page 9</span></div>
+<div class="toc-entry"><span><strong>08.</strong> Module 5 - Subcontractor & Vendor Management</span><span>Page 10</span></div>
+<div class="toc-entry"><span><strong>09.</strong> Module 6 - Lien Release Tracking</span><span>Page 11</span></div>
+<div class="toc-entry"><span><strong>10.</strong> Module 7 - Insurance & Compliance</span><span>Page 12</span></div>
+<div class="toc-entry"><span><strong>11.</strong> Module 8 - Document Management</span><span>Page 13</span></div>
+<div class="toc-entry"><span><strong>12.</strong> Module 9 - Job Cost & Profitability</span><span>Page 14</span></div>
+<div class="toc-entry"><span><strong>13.</strong> Database Schema</span><span>Page 15</span></div>
+<div class="toc-entry"><span><strong>14.</strong> API Endpoints Reference</span><span>Page 16</span></div>
+<div class="toc-entry"><span><strong>15.</strong> Notifications & Automation Engine</span><span>Page 17</span></div>
+<div class="toc-entry"><span><strong>16.</strong> Mobile App Requirements</span><span>Page 18</span></div>
+<div class="toc-entry"><span><strong>17.</strong> Sprint Plan (20-Week Delivery)</span><span>Page 19</span></div>
+<div class="toc-entry"><span><strong>18.</strong> Security, Roles & Permissions</span><span>Page 20</span></div>
+<div class="toc-entry"><span><strong>19.</strong> Integration Requirements & Data Migration</span><span>Page 21</span></div>
+<div class="toc-entry"><span><strong>20.</strong> Acceptance Criteria & QA Checklist</span><span>Page 22</span></div>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 01</div><h1>Executive Summary &amp; Business Context</h1></div>
+<h2>Company Overview</h2>
+<p>Southwest Stucco, Inc. (SWS) is a licensed lath and plaster subcontractor operating in Los Angeles County. License #702110, owned and operated by Aaron Secharia. The company specializes in commercial and multi-family residential stucco systems, serving major general contractors including Fassberg Construction Company.</p>
+<h2>Current Active Project</h2>
+<table><thead><tr><th>Field</th><th>Detail</th></tr></thead><tbody>
+<tr><td>Project</td><td>495 Hartford Apartments</td></tr>
+<tr><td>Address</td><td>1441 W. 5th Street, Los Angeles, CA 90017</td></tr>
+<tr><td>GC</td><td>Fassberg Construction Company</td></tr>
+<tr><td>Owner</td><td>Intergulf Development</td></tr>
+<tr><td>Architect</td><td>IBI Group</td></tr>
+<tr><td>Trade</td><td>CSI 09-200 Lath &amp; Plaster</td></tr>
+<tr><td>Original Contract</td><td>$865,000.00</td></tr>
+<tr><td>Approved Change Orders</td><td>$268,005.20 (COs 1-12)</td></tr>
+<tr><td>Revised Contract Total</td><td>$1,133,005.20</td></tr>
+<tr><td>Total Billed to Date</td><td>$1,157,965.20</td></tr>
+<tr><td>Total Paid to Date</td><td>$966,182.81</td></tr>
+<tr><td>Current Outstanding</td><td>~$191,000 (incl. ~$110K retention)</td></tr>
+<tr><td>Total Stucco Area</td><td>15,518 sq yds (13,827 walls + 1,863 ceilings)</td></tr>
+</tbody></table>
+<h2>Problem Statement</h2>
+<p>SWS currently operates via disconnected spreadsheets (Excel), paper documents, and manual email workflows. This creates critical gaps: billing errors, missed retention releases, untracked lien deadlines, expired insurance certificates, and no real-time job cost visibility. The company is at $1.1M+ contract scale with no integrated software to match.</p>
+<h2>Solution Vision</h2>
+<p>Build a bespoke, full-stack SWS Operations Platform: a web + mobile application covering the entire project lifecycle from bid/proposal through final payment and lien release. Every module maps directly to a real workflow gap observed in the Hartford project documents.</p>
+<div class="callout"><strong>ENGINEERING DIRECTIVE:</strong> Every requirement in this document is grounded in a real, observed workflow or gap from the SWS Hartford project file audit. Do not reduce P0 scope without written approval from Aaron Secharia.</div>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 02</div><h1>System Architecture Overview</h1></div>
+<h2>Architecture Style: Layered Monolith (Phase 1) / Microservices-Ready (Phase 2)</h2>
+<p>Phase 1 deploys a well-structured monolithic Rails API backend with a React frontend. The domain boundaries are cleanly separated so any module can be extracted into a microservice in Phase 2 without a full rewrite.</p>
+<div class="arch-row">
+<div class="arch-box primary"><strong>React Web App</strong><br><small>Admin + PM Dashboard</small></div>
+<div class="arch-box primary"><strong>React Native</strong><br><small>Field Mobile App</small></div>
+</div>
+<div class="arrow">&#8595; REST API / JSON &#8595;</div>
+<div class="arch-row">
+<div class="arch-box"><strong>Rails API</strong><br><small>Core Backend</small></div>
+<div class="arch-box"><strong>Sidekiq</strong><br><small>Background Jobs</small></div>
+<div class="arch-box"><strong>ActionMailer</strong><br><small>Email Notifications</small></div>
+</div>
+<div class="arrow">&#8595; Data Layer &#8595;</div>
+<div class="arch-row">
+<div class="arch-box"><strong>PostgreSQL</strong><br><small>Primary DB</small></div>
+<div class="arch-box"><strong>Redis</strong><br><small>Cache + Queue</small></div>
+<div class="arch-box"><strong>AWS S3</strong><br><small>File Storage</small></div>
+</div>
+<div class="arrow">&#8595; External Integrations &#8595;</div>
+<div class="arch-row">
+<div class="arch-box"><strong>QuickBooks</strong><br><small>Accounting Sync</small></div>
+<div class="arch-box"><strong>DocuSign</strong><br><small>E-Signatures</small></div>
+<div class="arch-box"><strong>Twilio</strong><br><small>SMS Alerts</small></div>
+<div class="arch-box"><strong>Dropbox API</strong><br><small>Legacy Docs</small></div>
+</div>
+<h2>Deployment</h2>
+<table><thead><tr><th>Component</th><th>Service</th><th>Rationale</th></tr></thead><tbody>
+<tr><td>Backend API</td><td>AWS EC2 / ECS (Fargate)</td><td>Scalable, familiar to most Rails devs</td></tr>
+<tr><td>Frontend</td><td>Vercel or AWS CloudFront + S3</td><td>Low-latency CDN delivery</td></tr>
+<tr><td>Database</td><td>AWS RDS PostgreSQL</td><td>Managed, automated backups</td></tr>
+<tr><td>File Storage</td><td>AWS S3</td><td>Cheap, durable, signed URL access</td></tr>
+<tr><td>Background Jobs</td><td>Sidekiq + Redis (Elasticache)</td><td>Async notifications, PDF gen, reminders</td></tr>
+<tr><td>SSL/CDN</td><td>Cloudflare</td><td>DDoS protection + SSL termination</td></tr>
+</tbody></table>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 03</div><h1>Technology Stack &amp; Integrations</h1></div>
+<h2>Frontend</h2>
+<table><thead><tr><th>Library/Tool</th><th>Version</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>React</td><td>18.x</td><td>Web dashboard UI</td></tr>
+<tr><td>React Native</td><td>0.73+</td><td>iOS + Android field app</td></tr>
+<tr><td>TanStack Query</td><td>5.x</td><td>Server-state management, caching</td></tr>
+<tr><td>Zustand</td><td>4.x</td><td>Client-side global state</td></tr>
+<tr><td>Tailwind CSS</td><td>3.x</td><td>Styling, responsive design</td></tr>
+<tr><td>React Hook Form + Zod</td><td>7.x / 3.x</td><td>Form handling + schema validation</td></tr>
+<tr><td>shadcn/ui</td><td>latest</td><td>Pre-built accessible components</td></tr>
+<tr><td>Recharts</td><td>2.x</td><td>Job cost charts, billing graphs</td></tr>
+<tr><td>React PDF Renderer</td><td>3.x</td><td>Generate pay app PDFs in-browser</td></tr>
+</tbody></table>
+<h2>Backend</h2>
+<table><thead><tr><th>Technology</th><th>Version</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>Ruby on Rails</td><td>7.1</td><td>API backend, business logic</td></tr>
+<tr><td>PostgreSQL</td><td>15+</td><td>Primary relational database</td></tr>
+<tr><td>Redis</td><td>7.x</td><td>Caching + Sidekiq queue backend</td></tr>
+<tr><td>Sidekiq</td><td>7.x</td><td>Async jobs: reminders, PDF gen, sync</td></tr>
+<tr><td>Devise + JWT</td><td>-</td><td>Authentication + token management</td></tr>
+<tr><td>Pundit</td><td>2.x</td><td>Authorization / role policies</td></tr>
+<tr><td>ActiveStorage + S3</td><td>-</td><td>Document uploads, signed URLs</td></tr>
+<tr><td>Prawn PDF</td><td>2.x</td><td>Server-side PDF generation</td></tr>
+<tr><td>Searchkick + Elasticsearch</td><td>-</td><td>Full-text document search</td></tr>
+</tbody></table>
+<h2>Third-Party Integrations</h2>
+<table><thead><tr><th>Service</th><th>Use Case</th><th>Priority</th></tr></thead><tbody>
+<tr><td>QuickBooks Online API</td><td>Sync invoices, payments, vendors</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>DocuSign API</td><td>E-sign lien releases, contracts, COs</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Twilio SMS</td><td>Payment alerts, document reminders</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>SendGrid</td><td>Transactional emails (pay apps, COIs)</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>AWS S3</td><td>Document storage, signed URL access</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Dropbox API v2</td><td>One-time legacy doc migration</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Google Maps API</td><td>Job site location on dashboard</td><td><span class="badge p2">P2</span></td></tr>
+</tbody></table>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 04</div><h1>Module 1: Project Management</h1></div>
+<h2>Overview</h2>
+<p>Central command for all active and historical projects. Each project tracks the full lifecycle: from proposal to final retention release. The Hartford project data serves as the seed data and validation template.</p>
+<h2>Core Features</h2>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Project Dashboard</td><td>Card view of all active jobs: contract amount, % complete, amount paid, outstanding balance, next milestone</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Project Profile</td><td>GC, owner, architect, address, license, bond, insurance on file, trade CSI code</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Phase/Milestone Tracker</td><td>Define phases (Lath, Scratch, Brown, Color), mark % complete, trigger billing</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Contacts CRM</td><td>Store GC PM, Super, Owner PM, Architect contacts per project</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Project Timeline</td><td>Gantt-style view of phases, scheduled vs actual</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Daily Log</td><td>Field crew logs: workers on-site, area worked, weather, photos</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Project Notes</td><td>Timestamped notes by user, linkable to documents</td><td><span class="badge p1">P1</span></td></tr>
+</tbody></table>
+<h2>Hartford Reference Data Points</h2>
+<ul>
+<li>13 proposal revisions (Nov 2021 to Jul 2024) indicate need for versioned proposal history linked to each project</li>
+<li>12 approved change orders demonstrate need for integrated CO tracking linked to billing</li>
+<li>10+ AIA G702/G703 pay applications show need for automated pay app generation tied to phase completion</li>
+<li>5 subcontractor crews (scaffold, lath, masking, scratch/brown, color) require per-crew phase assignment</li>
+</ul>
+<h2>User Stories</h2>
+<ul>
+<li>As Aaron, I want to see all active jobs on one screen with their financial health at a glance</li>
+<li>As the PM, I want to mark a phase complete and automatically trigger the billing workflow for that phase</li>
+<li>As a field super, I want to log daily crew counts and photos from my phone</li>
+</ul>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 05</div><h1>Module 2: Estimating &amp; Proposals</h1></div>
+<h2>Overview</h2>
+<p>Replace manual Excel takeoff sheets with a structured estimating engine. The Hartford takeoff (15,518 sq yds, floor-by-floor quantities, pricing at $59-61/yd for scaffold, $6/yd XJ-15, $6/LF drip edge) serves as the baseline template.</p>
+<h2>Takeoff Engine</h2>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Area Calculator</td><td>Input wall lengths, heights, ceiling areas per floor/zone. Auto-calculate sq yds</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Material Pricing Database</td><td>Store unit prices per material type, updated seasonally. Reference: Sherwin-Williams color specs (Dark Grey, Light Grey, Orange, White)</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Labor Rate Table</td><td>Per-trade labor rates: scaffold ($/yd), lath ($/yd), scratch/brown ($/yd), color ($/yd)</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Proposal Generator</td><td>Auto-generate formatted PDF proposal from takeoff. Include payment schedule, scope, exclusions, alternates</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Proposal Versioning</td><td>Track all revisions with timestamps, reason for change, delta from prior version</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Payment Schedule Builder</td><td>Define phase payment %: Hartford example: 35% lath / 20% scratch / 25% brown / 20% color</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Bid Comparison</td><td>Side-by-side comparison of multiple bid versions</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Historical Bid Library</td><td>Search past bids by trade, sq footage, city, GC for benchmarking</td><td><span class="badge p1">P1</span></td></tr>
+</tbody></table>
+<h2>Hartford Takeoff Reference</h2>
+<table><thead><tr><th>Item</th><th>Quantity</th><th>Unit</th></tr></thead><tbody>
+<tr><td>Total Stucco Walls</td><td>13,827.78</td><td>sq yds</td></tr>
+<tr><td>Total Ceilings</td><td>1,863.00</td><td>sq yds</td></tr>
+<tr><td>Total Area</td><td>15,518.00</td><td>sq yds</td></tr>
+<tr><td>Scaffold (walls)</td><td>$59.00</td><td>per sq yd</td></tr>
+<tr><td>Scaffold (ceilings)</td><td>$61.00</td><td>per sq yd</td></tr>
+<tr><td>XJ-15 Additive</td><td>$6.00</td><td>per sq yd</td></tr>
+<tr><td>Drip Edge</td><td>$6.00</td><td>per LF</td></tr>
+</tbody></table>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 06</div><h1>Module 3: Billing &amp; Accounts Receivable</h1></div>
+<h2>Overview</h2>
+<p>The most critical module. SWS currently bills via a manually-maintained Excel sheet (INVOICE BS.xlsx) tracking 40+ invoices across phases and change orders. The platform automates AIA G702/G703 pay application generation, tracks payments, and flags overdue amounts.</p>
+<h2>Hartford Billing Summary (Seed Data)</h2>
+<table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>
+<tr><td>Original Contract</td><td>$865,000.00</td></tr>
+<tr><td>Approved Change Orders</td><td>$268,005.20</td></tr>
+<tr><td>Revised Contract Total</td><td>$1,133,005.20</td></tr>
+<tr><td>Total Billed to Date</td><td>$1,157,965.20</td></tr>
+<tr><td>Total Paid to Date</td><td>$966,182.81</td></tr>
+<tr><td>Outstanding (incl. retention)</td><td>~$191,782.39</td></tr>
+<tr><td>Estimated Retention (~10%)</td><td>~$110,000.00</td></tr>
+</tbody></table>
+<h2>Core Billing Features</h2>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Pay Application Generator</td><td>Auto-generate AIA G702/G703 formatted PDF from phase completion data. Support continuation sheets</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Invoice Register</td><td>Full ledger of all invoices: number, date, amount, phase, status (pending/paid/partial/disputed)</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Payment Recording</td><td>Log payments by check number, date, amount. Support joint checks (GC + material supplier)</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Retention Tracker</td><td>Calculate and track retention withheld per pay app and cumulative. Alert when retention release is due</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Overdue Alert Engine</td><td>Flag invoices unpaid past 30/45/60 days. Send email + SMS to Aaron</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>QuickBooks Sync</td><td>Push invoices and payments to QBO. Reconcile automatically</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Joint Check Handler</td><td>Flag and track joint checks to material suppliers (L&amp;W Supply example: check #7359/7360, $31,572.09)</td><td><span class="badge p1">P1</span></td></tr>
+</tbody></table>
+<div class="callout"><strong>Real Example:</strong> Invoice #7461 (most recent Hartford billing): Revised contract $1,133,005.20, Total billed $1,157,965.20, Paid $966,182.81, Currently due $29,193.75. All pay apps must auto-calculate from these running totals.</div>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 07</div><h1>Module 4: Change Order Management</h1></div>
+<h2>Overview</h2>
+<p>Hartford had 12 approved change orders totaling $268,005.20 - nearly 31% of the original contract. Managing COs manually via signed PDFs creates risk of missed approvals and unbilled work. This module provides a full CO lifecycle from request to approval to billing integration.</p>
+<h2>Change Order Workflow</h2>
+<ol>
+<li><strong>Initiate RFQ</strong> - Field super or PM identifies extra work, submits Request for Quote in app with scope, photos, estimated cost</li>
+<li><strong>Internal Estimate</strong> - PM prices the CO using the estimating engine, generates draft CO document</li>
+<li><strong>Submit to GC</strong> - CO submitted via email with PDF attachment (DocuSign envelope auto-created for GC signature)</li>
+<li><strong>GC Review</strong> - System tracks status: Submitted / Under Review / Approved / Rejected / Partially Approved</li>
+<li><strong>Approval</strong> - GC signs via DocuSign. System auto-updates contract total and flags for billing on next pay app</li>
+<li><strong>Billing Integration</strong> - Approved CO amount automatically appears as a line in the next pay application (G703 continuation sheet)</li>
+</ol>
+<h2>Features</h2>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>CO Register</td><td>Numbered log of all COs: amount, status, date submitted, date approved, included in pay app #</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>DocuSign Integration</td><td>Auto-create signature envelope for CO approval. Store signed copy in project docs</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Contract Adjustment</td><td>Approved COs auto-update the contract total in billing module</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>CO Template Library</td><td>Pre-built CO templates by work type: additional scope, owner-directed, differing conditions, acceleration</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Pending CO Dashboard</td><td>Alert when COs pending GC approval are over 14 days old. Escalation workflow</td><td><span class="badge p0">P0</span></td></tr>
+</tbody></table>
+<h2>Hartford CO History Reference</h2>
+<table><thead><tr><th>CO Range</th><th>Total Value</th><th>Status</th></tr></thead><tbody>
+<tr><td>CO 1 - CO 12</td><td>$268,005.20</td><td>All Approved &amp; Signed by Fassberg</td></tr>
+<tr><td>CO 1 &amp; 3</td><td>Reviewed</td><td>Signed &amp; Approved on file</td></tr>
+</tbody></table>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 08</div><h1>Module 5: Subcontractor &amp; Vendor Management</h1></div>
+<h2>Overview</h2>
+<p>SWS operates with 5 specialized sub-crews on Hartford: Scaffold, Lath, Masking, Scratch/Brown, and Color/Crack System. Each sub has their own contracts, invoices, COIs, and payments. Currently managed in separate Dropbox folders with no integration.</p>
+<h2>Sub-Crew Structure (Hartford Reference)</h2>
+<table><thead><tr><th>#</th><th>Trade</th><th>Scope</th></tr></thead><tbody>
+<tr><td>1</td><td>Scaffold</td><td>Erect, maintain, dismantle scaffold system</td></tr>
+<tr><td>2</td><td>Lath</td><td>Install metal lath system on all surfaces</td></tr>
+<tr><td>3</td><td>Masking</td><td>Protect windows, doors, adjacent surfaces</td></tr>
+<tr><td>4</td><td>Scratch &amp; Brown</td><td>Apply scratch and brown coat plaster</td></tr>
+<tr><td>5</td><td>Color &amp; Crack System</td><td>Apply finish color coat + elastomeric crack system</td></tr>
+</tbody></table>
+<h2>Core Features</h2>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Vendor/Sub Database</td><td>Store all subs and material vendors with contact, license, insurance on file, payment terms</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Sub Contract Manager</td><td>Upload and track sub contracts per project. Track scope, amount, executed date</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Sub Invoice Tracker</td><td>Log sub invoices received, approval status, payment made. Link to joint check if applicable</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>COI Monitor</td><td>Track insurance expiration dates for all subs. Alert 30 days before expiry. Block payments to subs with expired COIs</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Lien Release Required Flag</td><td>Auto-require conditional lien release before issuing sub payment. Require unconditional after payment clears</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>W-9 Storage</td><td>Collect and store W-9 for all subs and vendors. Alert if missing</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>1099 Preparation</td><td>Year-end 1099-NEC report for all subs paid $600+</td><td><span class="badge p1">P1</span></td></tr>
+</tbody></table>
+<h2>Material Vendors</h2>
+<p>Primary material vendor: <strong>L&amp;W Supply</strong> (formerly USG Distribution). Monthly conditional and unconditional lien releases on file. Joint checks from Fassberg (GC) to SWS and L&amp;W Supply. The platform must handle this 3-party payment flow.</p>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 09</div><h1>Module 6: Lien Release Tracking</h1></div>
+<h2>Overview</h2>
+<p>California lien law is strict and unforgiving. Missing a lien deadline means losing the right to lien permanently. SWS must manage both its OWN lien releases (provided to GC to receive payment) and CONDITIONAL releases FROM subcontractors and material suppliers before disbursing funds. This module is a legal risk-management tool.</p>
+<h2>Lien Release Types</h2>
+<table><thead><tr><th>Type</th><th>Direction</th><th>When Required</th></tr></thead><tbody>
+<tr><td>SWS Conditional Waiver</td><td>SWS to GC</td><td>With each pay app submission. Conditioned on payment being received</td></tr>
+<tr><td>SWS Unconditional Waiver</td><td>SWS to GC</td><td>After GC payment clears. Permanently releases lien rights for amount paid</td></tr>
+<tr><td>Sub Conditional Waiver</td><td>Sub to SWS</td><td>Required before SWS pays sub. Sub waives rights conditional on SWS payment</td></tr>
+<tr><td>Sub Unconditional Waiver</td><td>Sub to SWS</td><td>After SWS payment to sub clears</td></tr>
+<tr><td>L&amp;W Supply Conditional</td><td>L&amp;W to SWS</td><td>Monthly, matching their billing to SWS</td></tr>
+<tr><td>L&amp;W Supply Unconditional</td><td>L&amp;W to SWS</td><td>Monthly, after joint check clears</td></tr>
+</tbody></table>
+<h2>Core Features</h2>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Lien Release Register</td><td>Full log by project, party, type, amount, date executed, date received/sent</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Auto-Generate SWS Releases</td><td>Generate CA-compliant conditional/unconditional waiver PDFs auto-populated from invoice data</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>DocuSign for Releases</td><td>Send lien releases for e-signature via DocuSign. Track execution status</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Preliminary Notice Tracker</td><td>Track 20-day preliminary notice deadlines per project. Alert if approaching</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Lien Deadline Calendar</td><td>Auto-calculate and display CA mechanics lien deadlines (90 days from last work for sub)</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Supplier Release Inbox</td><td>Receive and log incoming releases from L&amp;W Supply and subs. Match to invoices</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Pay-When-Paid Gate</td><td>Block sub payment disbursement until sub conditional release is received and matched</td><td><span class="badge p0">P0</span></td></tr>
+</tbody></table>
+<div class="callout"><strong>Legal Note:</strong> In California, a mechanics lien must be recorded within 90 days of project completion for subcontractors. A preliminary notice must be served within 20 days of first furnishing labor/materials. The platform auto-calculates these deadlines from project start dates.</div>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 10</div><h1>Module 7: Insurance &amp; Compliance</h1></div>
+<h2>Overview</h2>
+<p>SWS maintains multiple insurance policies: General Liability, Workers Compensation, Auto, and project-specific OCIP/CIP enrollment. Missing an expiration date or failing to provide a current COI to the GC can result in payment holds or removal from project. Hartford had 12+ insurance documents on file.</p>
+<h2>SWS Policies on File (Hartford Reference)</h2>
+<table><thead><tr><th>Policy Type</th><th>Period</th><th>Notes</th></tr></thead><tbody>
+<tr><td>General Liability</td><td>2025/2026</td><td>Required by all GCs</td></tr>
+<tr><td>Workers Compensation</td><td>2025/2026</td><td>CA state required</td></tr>
+<tr><td>Auto/Commercial Vehicle</td><td>2025/2026</td><td>For company vehicles and material hauling</td></tr>
+<tr><td>OCIP/CIP Enrollment</td><td>Per project</td><td>Owner-Controlled Insurance: Fassberg / Intergulf for Hartford</td></tr>
+</tbody></table>
+<h2>Core Features</h2>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Policy Vault</td><td>Store all SWS insurance policies with effective/expiry dates, policy numbers, carriers, limits</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>COI Generator</td><td>Auto-generate Certificate of Insurance for any GC/owner using stored policy data. Named insured support</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Expiry Alert Engine</td><td>Alert Aaron and office admin 60 and 30 days before any policy expires. Escalate at 15 days</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>COI Distribution Log</td><td>Track which COIs were sent to which GC/owner/architect, and when. Store proof of delivery</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Sub COI Monitor</td><td>Monitor sub insurance expiry. Block sub payments when COI expired. Auto-request renewal via email</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>OCIP Enrollment Manager</td><td>Track enrollment status per project. Store certificates, track payroll reporting deadlines</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>License Renewal Tracker</td><td>CSLB License #702110 expiry and renewal tracking. Bond expiry tracking</td><td><span class="badge p1">P1</span></td></tr>
+</tbody></table>
+<div class="callout"><strong>Automation Rule:</strong> If any SWS insurance policy expires without renewal, the system locks new invoice submissions and alerts Aaron immediately with instructions to upload renewal certificate before billing resumes.</div>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 11</div><h1>Module 8: Document Management</h1></div>
+<h2>Overview</h2>
+<p>SWS currently stores all project documents in Dropbox with manual folder organization. The Hartford folder alone had 11 subfolders and 100+ documents. The platform replaces Dropbox as the primary doc store, with structured categorization, full-text search, and version control.</p>
+<h2>Document Categories</h2>
+<table><thead><tr><th>Category</th><th>Examples</th><th>Retention</th></tr></thead><tbody>
+<tr><td>Contracts</td><td>Subcontract PDFs, executed agreements</td><td>Permanent</td></tr>
+<tr><td>Change Orders</td><td>RFQ, CO drafts, signed COs</td><td>Permanent</td></tr>
+<tr><td>Billing</td><td>Pay applications, invoices, billing schedules</td><td>7 years</td></tr>
+<tr><td>Insurance</td><td>COIs, policies, OCIP certificates</td><td>7 years</td></tr>
+<tr><td>Lien Releases</td><td>Conditionals, unconditionals, preliminary notices</td><td>10 years</td></tr>
+<tr><td>Proposals</td><td>All proposal revisions, alternates, scope letters</td><td>10 years</td></tr>
+<tr><td>Submittals</td><td>Color specs (Sherwin-Williams), product data sheets</td><td>Project life + 5yr</td></tr>
+<tr><td>Photos &amp; Videos</td><td>Job progress photos, deficiency documentation</td><td>5 years</td></tr>
+<tr><td>Checks &amp; Payments</td><td>Check images, remittance advices</td><td>7 years</td></tr>
+</tbody></table>
+<h2>Core Features</h2>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Structured Upload</td><td>Categorized file uploads with metadata: project, category, date, description, linked entity (invoice #, CO #, etc.)</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Full-Text Search</td><td>OCR + Elasticsearch on all PDFs. Find any doc by keyword, invoice number, name</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Version Control</td><td>Track document versions. Superseded docs archived, not deleted</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Dropbox Migration Tool</td><td>One-time bulk import from Dropbox API. Map existing folder structure to platform categories</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Mobile Photo Upload</td><td>Field crew snap and upload progress photos directly from phone, tagged to project/floor/phase</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Signed URL Access</td><td>All files served via S3 signed URLs (15-min expiry). No public document exposure</td><td><span class="badge p0">P0</span></td></tr>
+</tbody></table>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 12</div><h1>Module 9: Job Cost &amp; Profitability</h1></div>
+<h2>Overview</h2>
+<p>Without real-time job costing, SWS cannot know if a project is profitable until it is complete. The Hartford project at $1.13M contract with $966K paid demonstrates the scale at which margin leakage becomes significant. This module provides real-time estimated vs. actual cost tracking.</p>
+<h2>Cost Categories</h2>
+<table><thead><tr><th>Category</th><th>Subcategories</th></tr></thead><tbody>
+<tr><td>Material</td><td>Stucco, lath, accessories (L&amp;W Supply), color materials</td></tr>
+<tr><td>Labor - Own Crew</td><td>Foremen, journeymen, laborers, drivers</td></tr>
+<tr><td>Labor - Subs</td><td>Scaffold, lath sub, masking sub, S&amp;B sub, color sub</td></tr>
+<tr><td>Equipment</td><td>Spray rigs, mixers, tools</td></tr>
+<tr><td>Scaffold Rental</td><td>Per-week rental tracked on billing schedule</td></tr>
+<tr><td>Overhead Allocation</td><td>Prorated office, insurance, vehicle costs</td></tr>
+</tbody></table>
+<h2>Core Features</h2>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Budget vs. Actual Dashboard</td><td>Per project, per phase: budgeted cost vs. committed vs. actual spent. Color-coded variance</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Cost Entry</td><td>Log costs by category, amount, date, vendor/sub, linked invoice. Import from QBO</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Margin Calculator</td><td>Real-time gross margin per project: contract value minus total costs. Trend chart by week</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Cost-at-Completion (EAC)</td><td>Estimate final cost based on % complete and spending rate. Alert if projected to overrun budget</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Phase Profitability</td><td>Break down margin by phase (Lath phase more profitable than color phase, etc.)</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Company P&amp;L Dashboard</td><td>Aggregate profitability across ALL active and completed projects for the year</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>QBO Cost Import</td><td>Pull all AP invoices and payroll expenses from QuickBooks, categorize to projects</td><td><span class="badge p1">P1</span></td></tr>
+</tbody></table>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 13</div><h1>Database Schema</h1></div>
+<h2>Core Tables (PostgreSQL)</h2>
+<p>Below are the primary database tables. All monetary values stored in cents (BIGINT) to avoid floating point errors. UUIDs used as primary keys throughout for security.</p>
+<h3>projects table</h3>
+<table><thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>id</td><td>UUID PK</td><td>Project unique ID</td></tr>
+<tr><td>name</td><td>VARCHAR(255)</td><td>Project name (e.g. 495 Hartford Apartments)</td></tr>
+<tr><td>address, city, state, zip</td><td>VARCHAR</td><td>Job site address</td></tr>
+<tr><td>gc_company_id</td><td>UUID FK</td><td>General contractor reference</td></tr>
+<tr><td>original_contract_cents</td><td>BIGINT</td><td>Original contract amount in cents</td></tr>
+<tr><td>revised_contract_cents</td><td>BIGINT</td><td>Revised total after change orders</td></tr>
+<tr><td>retention_pct</td><td>DECIMAL(5,2)</td><td>Retention percentage (default 10.00)</td></tr>
+<tr><td>status</td><td>VARCHAR(30)</td><td>active / complete / on_hold / warranty</td></tr>
+</tbody></table>
+<h3>invoices table</h3>
+<table><thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>id</td><td>UUID PK</td><td>Invoice unique ID</td></tr>
+<tr><td>project_id</td><td>UUID FK</td><td>Parent project</td></tr>
+<tr><td>invoice_number</td><td>VARCHAR(50) UNIQUE</td><td>e.g. 7461</td></tr>
+<tr><td>pay_app_number</td><td>INTEGER</td><td>AIA pay app sequence number</td></tr>
+<tr><td>current_billed_cents</td><td>BIGINT</td><td>Amount billed this period</td></tr>
+<tr><td>retention_held_cents</td><td>BIGINT</td><td>Retention withheld this period</td></tr>
+<tr><td>net_due_cents</td><td>BIGINT</td><td>Net amount due after retention</td></tr>
+<tr><td>status</td><td>VARCHAR(30)</td><td>draft / sent / paid / partial / disputed</td></tr>
+</tbody></table>
+<h3>change_orders table</h3>
+<table><thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td>id</td><td>UUID PK</td><td>CO unique ID</td></tr>
+<tr><td>project_id</td><td>UUID FK</td><td>Parent project</td></tr>
+<tr><td>co_number</td><td>INTEGER</td><td>Sequential CO number (1-12 for Hartford)</td></tr>
+<tr><td>amount_cents</td><td>BIGINT</td><td>CO dollar value in cents</td></tr>
+<tr><td>status</td><td>VARCHAR(30)</td><td>draft / submitted / approved / rejected</td></tr>
+<tr><td>docusign_envelope_id</td><td>VARCHAR(100)</td><td>DocuSign envelope for GC signature</td></tr>
+</tbody></table>
+<h3>Additional Core Tables</h3>
+<p>companies (GCs, owners, architects, subs, vendors) | users (staff accounts with roles) | contacts (per-company contacts) | lien_releases (conditional/unconditional by party) | insurance_policies (SWS and sub policies with expiry tracking) | proposals (versioned bid history) | takeoff_items (floor-by-floor quantities) | cost_entries (actual costs by category) | project_phases (Lath/Scratch/Brown/Color with % complete) | documents (S3-stored files with metadata) | payments (check receipts with reconciliation) | notifications (alert log)</p>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 14</div><h1>API Endpoints Reference</h1></div>
+<h2>REST API - Base URL: /api/v1/</h2>
+<p>All endpoints require JWT Bearer token in Authorization header. JSON request/response. Paginated list endpoints use cursor-based pagination.</p>
+<h3>Projects</h3>
+<table><thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead><tbody>
+<tr><td>GET</td><td>/projects</td><td>List all projects with summary financials</td></tr>
+<tr><td>POST</td><td>/projects</td><td>Create new project</td></tr>
+<tr><td>GET</td><td>/projects/:id</td><td>Get project details with all linked data</td></tr>
+<tr><td>PATCH</td><td>/projects/:id</td><td>Update project details</td></tr>
+<tr><td>GET</td><td>/projects/:id/dashboard</td><td>Full financial dashboard for one project</td></tr>
+</tbody></table>
+<h3>Invoices / Pay Applications</h3>
+<table><thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead><tbody>
+<tr><td>GET</td><td>/projects/:id/invoices</td><td>List all invoices for project</td></tr>
+<tr><td>POST</td><td>/projects/:id/invoices</td><td>Create new pay application</td></tr>
+<tr><td>GET</td><td>/invoices/:id/pdf</td><td>Generate AIA G702/G703 PDF</td></tr>
+<tr><td>POST</td><td>/invoices/:id/submit</td><td>Submit pay app (sends to GC via email)</td></tr>
+<tr><td>POST</td><td>/invoices/:id/payment</td><td>Record payment received (check #, date, amount)</td></tr>
+</tbody></table>
+<h3>Change Orders</h3>
+<table><thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead><tbody>
+<tr><td>GET</td><td>/projects/:id/change_orders</td><td>List all COs for project</td></tr>
+<tr><td>POST</td><td>/projects/:id/change_orders</td><td>Create new CO request</td></tr>
+<tr><td>POST</td><td>/change_orders/:id/submit</td><td>Submit CO to GC (creates DocuSign envelope)</td></tr>
+<tr><td>POST</td><td>/change_orders/:id/approve</td><td>Mark CO approved, update contract total</td></tr>
+</tbody></table>
+<h3>Lien Releases</h3>
+<table><thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead><tbody>
+<tr><td>GET</td><td>/projects/:id/lien_releases</td><td>List all releases by type and party</td></tr>
+<tr><td>POST</td><td>/projects/:id/lien_releases</td><td>Create and send lien release via DocuSign</td></tr>
+<tr><td>GET</td><td>/lien_releases/:id/pdf</td><td>Generate CA-compliant release PDF</td></tr>
+<tr><td>POST</td><td>/lien_releases/:id/receive</td><td>Mark incoming release as received</td></tr>
+</tbody></table>
+<h3>Insurance</h3>
+<table><thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead><tbody>
+<tr><td>GET</td><td>/insurance_policies</td><td>List all SWS policies with expiry status</td></tr>
+<tr><td>POST</td><td>/insurance_policies</td><td>Upload new policy</td></tr>
+<tr><td>POST</td><td>/insurance_policies/:id/generate_coi</td><td>Generate COI PDF for named GC/owner</td></tr>
+</tbody></table>
+<h3>Documents</h3>
+<table><thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead><tbody>
+<tr><td>POST</td><td>/documents</td><td>Upload document (returns S3 signed URL)</td></tr>
+<tr><td>GET</td><td>/documents/:id/url</td><td>Get signed S3 URL (15-min expiry)</td></tr>
+<tr><td>GET</td><td>/documents/search</td><td>Full-text search across all documents</td></tr>
+</tbody></table>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 15</div><h1>Notifications &amp; Automation Engine</h1></div>
+<h2>Overview</h2>
+<p>All background automation runs via Sidekiq workers. Scheduled jobs run nightly at 6:00 AM PT. All notifications respect user preference settings (email, SMS, in-app).</p>
+<h2>Automated Alert Rules</h2>
+<table><thead><tr><th>Trigger</th><th>Alert Sent To</th><th>Channel</th><th>Timing</th></tr></thead><tbody>
+<tr><td>Invoice unpaid</td><td>Aaron + PM</td><td>Email + SMS</td><td>30, 45, 60 days after invoice date</td></tr>
+<tr><td>Insurance expiring</td><td>Aaron + Office</td><td>Email + SMS</td><td>60, 30, 15 days before expiry</td></tr>
+<tr><td>Sub COI expired</td><td>Aaron + PM</td><td>Email</td><td>Day of expiry + daily until renewed</td></tr>
+<tr><td>CO pending approval > 14 days</td><td>Aaron + PM</td><td>Email</td><td>Daily after 14-day threshold</td></tr>
+<tr><td>Lien deadline approaching</td><td>Aaron</td><td>Email + SMS</td><td>30, 14, 7, 3, 1 day before deadline</td></tr>
+<tr><td>Sub conditional release missing</td><td>PM</td><td>Email</td><td>When sub payment is pending and release not received</td></tr>
+<tr><td>Payment received</td><td>Aaron</td><td>SMS + In-App</td><td>Immediately on payment record creation</td></tr>
+<tr><td>Phase marked complete</td><td>Aaron + Billing Team</td><td>In-App + Email</td><td>Immediately - triggers billing workflow prompt</td></tr>
+<tr><td>DocuSign signed</td><td>Aaron + PM</td><td>Email + In-App</td><td>DocuSign webhook callback, near-instant</td></tr>
+<tr><td>Monthly retention summary</td><td>Aaron</td><td>Email</td><td>1st of each month</td></tr>
+</tbody></table>
+<h2>Automation Workflows</h2>
+<h3>Pay Application Auto-Draft</h3>
+<p>When a project phase is marked complete: 1) System auto-calculates the billable amount for that phase. 2) Generates a draft pay application pre-populated with prior billing history, CO totals, and retention calculation. 3) Notifies the billing user to review and submit. 4) One-click submission generates PDF and sends to GC email on file.</p>
+<h3>Lien Release Chaining</h3>
+<p>When a payment is recorded: 1) System checks if a conditional lien release exists for the invoice. 2) If conditional was sent and payment received, auto-prompts to generate unconditional release. 3) DocuSign envelope created for e-signature. 4) Once signed, unconditional release stored and linked to payment record.</p>
+<h3>Insurance Renewal Workflow</h3>
+<p>60 days before any policy expiry: 1) Alert sent to Aaron with policy details. 2) Follow-up at 30 and 15 days. 3) At expiry: System flags all projects using that policy. 4) New invoice generation is blocked until renewed policy uploaded. 5) On upload: All GC contacts auto-notified with updated COI.</p>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 16</div><h1>Mobile App Requirements</h1></div>
+<h2>Platform: React Native (iOS + Android)</h2>
+<p>The mobile app serves field superintendents, crew leads, and Aaron when on-site. It is a companion to the web dashboard, not a replacement. Focus is on field data capture, real-time visibility, and quick approvals.</p>
+<h2>Mobile Features by Role</h2>
+<h3>Field Superintendent / Crew Lead</h3>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Daily Log</td><td>Log crew count by trade, hours worked, areas completed. Voice-to-text support</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Photo Upload</td><td>Camera capture with automatic project/phase/floor tagging. GPS metadata</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Phase Check-In</td><td>Mark phase as started / in-progress / complete from phone</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>Issue/RFI Log</td><td>Document field issues or GC directives that may trigger a CO</td><td><span class="badge p1">P1</span></td></tr>
+</tbody></table>
+<h3>Aaron (Owner/PM)</h3>
+<table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th></tr></thead><tbody>
+<tr><td>Project Dashboard</td><td>See all active jobs, financial status, outstanding invoices at a glance</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Notification Center</td><td>All alerts: unpaid invoices, expiring insurance, pending COs, lien deadlines</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Document Viewer</td><td>View any project document (signed URL), sign documents via DocuSign mobile SDK</td><td><span class="badge p1">P1</span></td></tr>
+<tr><td>CO Approval</td><td>Review and approve change orders from phone with DocuSign e-sign</td><td><span class="badge p0">P0</span></td></tr>
+<tr><td>Invoice Approval</td><td>Review and submit pay applications for billing from phone</td><td><span class="badge p1">P1</span></td></tr>
+</tbody></table>
+<h2>Mobile Technical Requirements</h2>
+<ul>
+<li>Offline mode: Daily logs can be filled out offline and synced when connectivity restored</li>
+<li>Push notifications via Firebase Cloud Messaging (FCM) for iOS and Android</li>
+<li>Biometric authentication (Face ID / Touch ID) support</li>
+<li>Photo compression before upload: max 2MB per image</li>
+<li>Target: iOS 16+ and Android 12+ (covers 90%+ of current devices)</li>
+<li>App Store and Google Play distribution (internal TestFlight for beta)</li>
+</ul>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 17</div><h1>Sprint Plan: 20-Week Delivery</h1></div>
+<h2>10 Sprints x 2 Weeks Each</h2>
+<p>Team: 2 Backend Engineers, 2 Frontend Engineers, 1 DevOps/Infra, 1 QA Engineer, 1 Tech Lead (PM). Sprint ceremonies: Planning Monday AM, Daily standups, Review + Retro on final Friday.</p>
+<div class="sprint-card">
+<h3>Sprint 1 (Weeks 1-2) - <em>Foundation</em></h3>
+<p>Project setup, CI/CD pipeline, AWS infrastructure, database migrations, authentication (JWT + Devise), user/role model. Deliverable: deployed skeleton app with login.</p>
+</div>
+<div class="sprint-card">
+<h3>Sprint 2 (Weeks 3-4) - <em>Project & Company Core</em></h3>
+<p>Project CRUD, company/contact management, project dashboard (web). Seed Hartford project data. Basic document upload to S3. Deliverable: Aaron can create and view the Hartford project.</p>
+</div>
+<div class="sprint-card">
+<h3>Sprint 3 (Weeks 5-6) - <em>Billing Module P0</em></h3>
+<p>Invoice creation, pay application generator (AIA G702/G703 PDF), invoice register, payment recording. QuickBooks OAuth setup. Deliverable: First real pay app generated from Hartford data.</p>
+</div>
+<div class="sprint-card">
+<h3>Sprint 4 (Weeks 7-8) - <em>Change Order Module</em></h3>
+<p>CO request workflow, DocuSign integration, CO approval flow, auto-contract-total update, CO register. Deliverable: Full CO lifecycle from request to GC approval.</p>
+</div>
+<div class="sprint-card">
+<h3>Sprint 5 (Weeks 9-10) - <em>Lien Release Module</em></h3>
+<p>CA-compliant lien release generation (conditional + unconditional), DocuSign for lien releases, lien deadline calculator, preliminary notice tracker. Deliverable: Auto-generate lien releases linked to invoices.</p>
+</div>
+<div class="sprint-card">
+<h3>Sprint 6 (Weeks 11-12) - <em>Insurance & Compliance</em></h3>
+<p>Insurance policy vault, COI generator, expiry alert engine, sub COI monitor, OCIP enrollment tracker. Deliverable: All SWS policies loaded with automated expiry alerts.</p>
+</div>
+<div class="sprint-card">
+<h3>Sprint 7 (Weeks 13-14) - <em>Estimating & Proposals</em></h3>
+<p>Takeoff area calculator, material/labor pricing DB, proposal generator PDF, proposal versioning. Payment schedule builder. Deliverable: Generate proposal from Hartford-style takeoff data.</p>
+</div>
+<div class="sprint-card">
+<h3>Sprint 8 (Weeks 15-16) - <em>Subcontractor & Job Costing</em></h3>
+<p>Sub/vendor database, sub invoice tracker, cost entry module, budget vs. actual dashboard, margin calculator. Deliverable: Real-time job cost visibility for Hartford project.</p>
+</div>
+<div class="sprint-card">
+<h3>Sprint 9 (Weeks 17-18) - <em>Mobile App + Automation</em></h3>
+<p>React Native app (Aaron dashboard, notifications, CO approval). Sidekiq automation engine: overdue invoice alerts, insurance expiry alerts, lien deadline alerts. FCM push notifications. Deliverable: Aaron gets alerts on phone.</p>
+</div>
+<div class="sprint-card">
+<h3>Sprint 10 (Weeks 19-20) - <em>Dropbox Migration + QA + Launch</em></h3>
+<p>Dropbox API bulk import, document categorization, full QA pass, UAT with Aaron, security pen test, performance load test, production launch. Deliverable: Live production system.</p>
+</div>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 18</div><h1>Security, Roles &amp; Permissions</h1></div>
+<h2>Authentication</h2>
+<ul>
+<li>JWT tokens with 1-hour expiry + refresh token (14-day, httpOnly cookie)</li>
+<li>Devise for Rails session management on web</li>
+<li>Biometric auth on mobile (Face ID / Touch ID via device Keychain)</li>
+<li>MFA via TOTP (Google Authenticator) for Aaron and admin roles</li>
+<li>Password policy: min 12 chars, complexity required, bcrypt storage</li>
+</ul>
+<h2>Role Matrix (RBAC via Pundit)</h2>
+<table><thead><tr><th>Permission</th><th>Owner (Aaron)</th><th>PM/Admin</th><th>Field Super</th><th>GC Portal</th></tr></thead><tbody>
+<tr><td>View all projects</td><td>YES</td><td>YES</td><td>Assigned only</td><td>NO</td></tr>
+<tr><td>Create/Edit projects</td><td>YES</td><td>YES</td><td>NO</td><td>NO</td></tr>
+<tr><td>Create invoices</td><td>YES</td><td>YES</td><td>NO</td><td>NO</td></tr>
+<tr><td>Submit pay apps</td><td>YES</td><td>YES</td><td>NO</td><td>NO</td></tr>
+<tr><td>View invoices/payments</td><td>YES</td><td>YES</td><td>NO</td><td>Own project only</td></tr>
+<tr><td>Create change orders</td><td>YES</td><td>YES</td><td>Flag only</td><td>NO</td></tr>
+<tr><td>Approve change orders</td><td>YES</td><td>NO</td><td>NO</td><td>GC approval only</td></tr>
+<tr><td>Manage insurance</td><td>YES</td><td>YES</td><td>NO</td><td>NO</td></tr>
+<tr><td>Upload documents</td><td>YES</td><td>YES</td><td>YES (photos)</td><td>NO</td></tr>
+<tr><td>View documents</td><td>YES</td><td>YES</td><td>Assigned project</td><td>Shared docs only</td></tr>
+<tr><td>Job cost reports</td><td>YES</td><td>YES</td><td>NO</td><td>NO</td></tr>
+<tr><td>User management</td><td>YES</td><td>NO</td><td>NO</td><td>NO</td></tr>
+</tbody></table>
+<h2>Data Security</h2>
+<ul>
+<li>All data encrypted at rest (AWS RDS encryption, S3 SSE-S3)</li>
+<li>All data encrypted in transit (TLS 1.3 minimum, Cloudflare enforced)</li>
+<li>S3 documents served via signed URLs only (15-min expiry). No public buckets.</li>
+<li>PII fields (SSN, bank account) encrypted at application layer (ActiveRecord::Encryption)</li>
+<li>Audit log: all data modifications logged to immutable audit_logs table with user, timestamp, IP</li>
+<li>RBAC enforced at API layer (Pundit policies) and database layer (row-level security)</li>
+<li>Annual penetration testing by third-party security firm</li>
+</ul>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 19</div><h1>Integration Requirements &amp; Data Migration</h1></div>
+<h2>QuickBooks Online Integration</h2>
+<table><thead><tr><th>Data Flow</th><th>Direction</th><th>Trigger</th></tr></thead><tbody>
+<tr><td>Invoice created in SWS Platform</td><td>SWS to QBO</td><td>On invoice submission</td></tr>
+<tr><td>Payment received in SWS Platform</td><td>SWS to QBO</td><td>On payment recording</td></tr>
+<tr><td>Vendor invoices (AP) from QBO</td><td>QBO to SWS</td><td>Daily sync for cost entry</td></tr>
+<tr><td>Chart of accounts</td><td>QBO to SWS</td><td>One-time import at setup</td></tr>
+</tbody></table>
+<p>Use QBO REST API v3. OAuth 2.0 authorization. Store QBO realm ID per company. Handle rate limits and token refresh.</p>
+<h2>DocuSign Integration</h2>
+<table><thead><tr><th>Document Type</th><th>Signers</th><th>Trigger</th></tr></thead><tbody>
+<tr><td>Change Order</td><td>Aaron + GC PM</td><td>CO submitted to GC</td></tr>
+<tr><td>Conditional Lien Release</td><td>Aaron (SWS)</td><td>Pay app submitted</td></tr>
+<tr><td>Unconditional Lien Release</td><td>Aaron (SWS)</td><td>Payment received + cleared</td></tr>
+<tr><td>Sub Contracts</td><td>Aaron + Sub PM</td><td>New sub contract created</td></tr>
+</tbody></table>
+<p>Use DocuSign eSignature REST API. Webhook callbacks for completion events. Store envelope IDs and completed document PDFs in S3.</p>
+<h2>Dropbox Data Migration Plan</h2>
+<p>One-time migration of all existing SWS Dropbox files to the new platform document store. Estimated file count: 500-1,000 documents across all projects.</p>
+<table><thead><tr><th>Step</th><th>Action</th><th>Owner</th></tr></thead><tbody>
+<tr><td>1</td><td>Audit all Dropbox folders, catalog file types and sizes</td><td>DevOps</td></tr>
+<tr><td>2</td><td>Build Dropbox-to-S3 migration script using Dropbox API v2</td><td>Backend</td></tr>
+<tr><td>3</td><td>Map Dropbox folder names to platform document categories</td><td>PM + Aaron</td></tr>
+<tr><td>4</td><td>Run migration in staging, verify file counts and integrity</td><td>QA</td></tr>
+<tr><td>5</td><td>Run production migration, disable Dropbox folder writes</td><td>DevOps</td></tr>
+</tbody></table>
+<h2>Twilio SMS + SendGrid Email</h2>
+<p>All notification emails sent via SendGrid transactional API (not SMTP). SMS alerts via Twilio Programmable SMS. Phone number stored per user in the users table. All notification preferences configurable per user (email, SMS, in-app, none).</p>
+</div>
+<div class="page">
+<div class="section-header"><div class="section-num">Section 20</div><h1>Acceptance Criteria &amp; QA Checklist</h1></div>
+<h2>Definition of Done (per story)</h2>
+<ul>
+<li>Feature works end-to-end in staging environment</li>
+<li>Unit tests written with >80% coverage on critical business logic</li>
+<li>Integration tests cover the API endpoint(s)</li>
+<li>Code reviewed and approved by Tech Lead</li>
+<li>No critical or high Sentry errors in staging</li>
+<li>Accessibility: WCAG 2.1 AA compliance for all UI components</li>
+</ul>
+<h2>P0 Acceptance Criteria (Must Pass Before Launch)</h2>
+<table><thead><tr><th>#</th><th>Test Scenario</th><th>Expected Result</th></tr></thead><tbody>
+<tr><td>1</td><td>Create Hartford project with $865K contract, add 12 COs totaling $268,005.20</td><td>Revised contract shows $1,133,005.20</td></tr>
+<tr><td>2</td><td>Generate pay app #10 using Invoice #7461 data</td><td>PDF shows: billed $1,157,965.20, paid $966,182.81, due $29,193.75</td></tr>
+<tr><td>3</td><td>Mark lath phase complete, verify billing prompt fires</td><td>System creates draft pay app and notifies billing user within 60 seconds</td></tr>
+<tr><td>4</td><td>Set insurance policy expiry to 25 days from today</td><td>Email + SMS alert sent to Aaron within nightly job window (by 7am next day)</td></tr>
+<tr><td>5</td><td>Submit CO to GC via DocuSign</td><td>DocuSign envelope created, GC email received, CO status = Submitted</td></tr>
+<tr><td>6</td><td>Record payment of $29,193.75 on Invoice #7461</td><td>Invoice status = Paid, QBO sync fires, conditional release prompt shown</td></tr>
+<tr><td>7</td><td>Upload document, then view it 20 minutes later</td><td>Document not accessible (signed URL expired after 15 min)</td></tr>
+<tr><td>8</td><td>Field super marks 3rd floor color complete from mobile app</td><td>Phase updated, photo tagged to 3rd floor/color phase, visible in web dashboard</td></tr>
+<tr><td>9</td><td>Sub COI expiry date passes without renewal</td><td>Sub payment blocked, alert sent to PM, sub auto-emailed renewal request</td></tr>
+<tr><td>10</td><td>Run Dropbox migration script with Hartford folder</td><td>All 100+ documents imported, categorized, searchable in platform</td></tr>
+</tbody></table>
+<h2>Performance Benchmarks (Required at Launch)</h2>
+<table><thead><tr><th>Metric</th><th>Target</th></tr></thead><tbody>
+<tr><td>API response time (p95)</td><td>&lt; 200ms for reads, &lt; 500ms for writes</td></tr>
+<tr><td>PDF generation time</td><td>&lt; 5 seconds for AIA G702/G703</td></tr>
+<tr><td>File upload speed</td><td>&lt; 10 seconds for 10MB document to S3</td></tr>
+<tr><td>Dashboard load time</td><td>&lt; 3 seconds on 4G mobile connection</td></tr>
+<tr><td>System uptime</td><td>99.9% SLA (max 8.7 hours downtime/year)</td></tr>
+</tbody></table>
+<div class="callout"><strong>FINAL NOTE FROM SYSTEMS ENGINEERING TEAM:</strong> This specification represents a complete, production-ready technical plan grounded 100% in real observed workflows from the Southwest Stucco, Inc. Hartford Apartments project file. Every table, every module, and every alert rule maps to a real gap identified during the document audit. Build this exactly as specified and Southwest Stucco will have an operations platform that is ahead of 90% of subcontractors in the market. Questions? Contact the System Engineering Team Lead before modifying P0 scope.</div>
+</div>
+</body>
+</html>
