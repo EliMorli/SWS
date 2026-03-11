@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: sws
+      POSTGRES_PASSWORD: sws_dev_password
+      POSTGRES_DB: sws_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -b 0.0.0.0 -p 3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgres://sws:sws_dev_password@db:5432/sws_development
+      REDIS_URL: redis://redis:6379/0
+      RAILS_ENV: development
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:-development_key_placeholder}
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_key_change_in_production}
+    volumes:
+      - ./api:/app
+      - api_bundle:/usr/local/bundle
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    environment:
+      VITE_API_URL: http://localhost:3000
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+
+  sidekiq:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    command: bundle exec sidekiq
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgres://sws:sws_dev_password@db:5432/sws_development
+      REDIS_URL: redis://redis:6379/0
+      RAILS_ENV: development
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:-development_key_placeholder}
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_key_change_in_production}
+    volumes:
+      - ./api:/app
+      - api_bundle:/usr/local/bundle
+
+volumes:
+  postgres_data:
+  redis_data:
+  api_bundle:

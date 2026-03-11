@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+vendor/bundle/
+
+# Build
+web/dist/
+api/tmp/
+api/log/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Rails
+api/tmp/pids/
+api/tmp/cache/
+api/tmp/sockets/
+api/log/*.log
+api/storage/
+api/public/assets/
+
+# Docker
+.docker/
