@@ -175,6 +175,87 @@ export interface FieldUpdate {
   created_at: string
 }
 
+// ─── Estimates & Proposals ──────────────────────────────────────────────────
+
+export type EstimateStatus = 'draft' | 'sent' | 'accepted' | 'declined'
+
+export type EstimateLineItemCategory =
+  | 'material'
+  | 'labor'
+  | 'equipment'
+  | 'scaffolding'
+  | 'subcontractor'
+  | 'permits'
+  | 'overhead'
+  | 'other'
+
+export interface EstimateLineItem {
+  id: string
+  description: string
+  category: EstimateLineItemCategory
+  quantity: number
+  unit: string
+  unit_cost: number
+  total: number
+}
+
+export interface Estimate {
+  id: string
+  project_id: string | null
+  project_name?: string
+  estimate_number: string
+  title: string
+  client_name: string
+  client_address: string
+  scope_of_work: string
+  exclusions: string
+  terms_and_conditions: string
+  line_items: EstimateLineItem[]
+  subtotal: number
+  markup_pct: number
+  markup_amount: number
+  tax_pct: number
+  tax_amount: number
+  total: number
+  status: EstimateStatus
+  valid_days: number
+  created_at: string
+  sent_date: string | null
+  accepted_date: string | null
+  expiry_date: string | null
+  notes: string | null
+}
+
+// ─── Dropbox Integration ────────────────────────────────────────────────────
+
+export interface DropboxConnection {
+  id: string
+  access_token: string
+  refresh_token: string
+  account_id: string
+  account_display_name: string
+  connected_at: string
+  expires_at: string
+}
+
+export interface DropboxFileEntry {
+  id: string
+  name: string
+  path_lower: string
+  path_display: string
+  type: 'file' | 'folder'
+  size?: number
+  modified?: string
+  icon?: string
+  children?: DropboxFileEntry[]
+}
+
+export interface ProjectDropboxMapping {
+  project_id: string
+  dropbox_folder_path: string
+  linked_at: string
+}
+
 export interface ProjectDashboard {
   project: Project
   phases: ProjectPhase[]

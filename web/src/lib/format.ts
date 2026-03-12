@@ -56,3 +56,33 @@ export function policyTypeLabel(type: string): string {
   }
   return map[type] || type
 }
+
+export function estimateStatusColor(status: string): string {
+  const map: Record<string, string> = {
+    draft: 'badge-gray',
+    sent: 'badge-blue',
+    accepted: 'badge-green',
+    declined: 'badge-red',
+  }
+  return map[status] || 'badge-gray'
+}
+
+export function categoryLabel(category: string): string {
+  const map: Record<string, string> = {
+    material: 'Material',
+    labor: 'Labor',
+    equipment: 'Equipment',
+    scaffolding: 'Scaffolding',
+    subcontractor: 'Subcontractor',
+    permits: 'Permits',
+    overhead: 'Overhead',
+    other: 'Other',
+  }
+  return map[category] || category
+}
+
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}

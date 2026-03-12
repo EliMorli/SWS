@@ -1,4 +1,4 @@
-import type { Project, Invoice, ChangeOrder, LienRelease, InsurancePolicy, FieldUpdate } from '../types'
+import type { Project, Invoice, ChangeOrder, LienRelease, InsurancePolicy, FieldUpdate, Estimate, EstimateLineItem, ProjectDropboxMapping, DropboxFileEntry } from '../types'
 
 const STORAGE_KEY = 'sws_demo_data'
 
@@ -9,6 +9,8 @@ export interface DemoData {
   lienReleases: LienRelease[]
   insurancePolicies: InsurancePolicy[]
   fieldUpdates: FieldUpdate[]
+  estimates: Estimate[]
+  dropboxMappings: ProjectDropboxMapping[]
 }
 
 // ─── Seed Data ───────────────────────────────────────────────────────────────
@@ -238,6 +240,149 @@ function seedFieldUpdates(): FieldUpdate[] {
   ]
 }
 
+function seedEstimates(): Estimate[] {
+  const lineItems1: EstimateLineItem[] = [
+    { id: 'li-1', description: 'Metal lath (3.4 lb diamond)', category: 'material', quantity: 15691, unit: 'sq yd', unit_cost: 3.25, total: 50995.75 },
+    { id: 'li-2', description: 'Scratch coat material (cement/sand)', category: 'material', quantity: 15691, unit: 'sq yd', unit_cost: 1.80, total: 28243.80 },
+    { id: 'li-3', description: 'Brown coat material', category: 'material', quantity: 15691, unit: 'sq yd', unit_cost: 2.10, total: 32951.10 },
+    { id: 'li-4', description: 'Color coat material (Sherwin-Williams)', category: 'material', quantity: 15691, unit: 'sq yd', unit_cost: 2.85, total: 44719.35 },
+    { id: 'li-5', description: 'Lath installation labor', category: 'labor', quantity: 15691, unit: 'sq yd', unit_cost: 12.50, total: 196137.50 },
+    { id: 'li-6', description: 'Plaster application labor (scratch/brown/color)', category: 'labor', quantity: 15691, unit: 'sq yd', unit_cost: 18.00, total: 282438.00 },
+    { id: 'li-7', description: 'Scaffolding - full project duration', category: 'scaffolding', quantity: 1, unit: 'ls', unit_cost: 85000, total: 85000.00 },
+    { id: 'li-8', description: 'Pump/mixer equipment rental', category: 'equipment', quantity: 6, unit: 'mo', unit_cost: 4500, total: 27000.00 },
+  ]
+  const subtotal1 = lineItems1.reduce((s, li) => s + li.total, 0)
+  const markup1 = subtotal1 * 0.15
+  const total1 = subtotal1 + markup1
+
+  const lineItems2: EstimateLineItem[] = [
+    { id: 'li-9', description: 'Stucco material - amenity deck walls', category: 'material', quantity: 2400, unit: 'sq yd', unit_cost: 4.50, total: 10800.00 },
+    { id: 'li-10', description: 'Metal lath - amenity deck', category: 'material', quantity: 2400, unit: 'sq yd', unit_cost: 3.25, total: 7800.00 },
+    { id: 'li-11', description: 'Labor - lath & plaster (amenity)', category: 'labor', quantity: 2400, unit: 'sq yd', unit_cost: 32.00, total: 76800.00 },
+    { id: 'li-12', description: 'Scaffolding - amenity deck', category: 'scaffolding', quantity: 1, unit: 'ls', unit_cost: 18000, total: 18000.00 },
+    { id: 'li-13', description: 'Waterproofing additive', category: 'material', quantity: 2400, unit: 'sq yd', unit_cost: 1.75, total: 4200.00 },
+  ]
+  const subtotal2 = lineItems2.reduce((s, li) => s + li.total, 0)
+  const markup2 = subtotal2 * 0.15
+  const total2 = subtotal2 + markup2
+
+  return [
+    {
+      id: 'est-001',
+      project_id: 'hartford-001',
+      project_name: '495 Hartford Apartments',
+      estimate_number: 'EST-2022-001',
+      title: '495 Hartford Apartments - Lath & Plaster - Original Bid',
+      client_name: 'Fassberg Construction Company',
+      client_address: '1441 W. 5th Street, Los Angeles, CA 90017',
+      scope_of_work: 'Furnish all labor, material, equipment, and scaffolding required for the complete installation of metal lath and three-coat plaster system (scratch, brown, and color coat) per CSI 09-200 specifications for the 495 Hartford Apartments project.\n\nWork includes all exterior walls (13,828 sq yds) and ceilings (1,863 sq yds) across Buildings A through D, totaling approximately 15,691 square yards.\n\nColor coat finish: Sherwin-Williams Harmonized Colors system, smooth trowel finish, as selected by architect (IBI Group).',
+      exclusions: '- Structural framing and sheathing\n- Waterproofing and weather barriers (by others)\n- Window and door installation\n- Painting beyond integral color coat\n- Permits and engineering (by GC)\n- Overtime or shift work unless pre-approved',
+      terms_and_conditions: 'Payment: Net 30 from certified pay application\nRetention: Per subcontract agreement (10%)\nPrice valid for 60 days from date of proposal\nWork to be performed during normal business hours (7am-3:30pm M-F)\nAny changes to scope require written change order approval\nSouthwest Stucco maintains all required insurance and licensing (CA License #702110)',
+      line_items: lineItems1,
+      subtotal: subtotal1,
+      markup_pct: 15,
+      markup_amount: markup1,
+      tax_pct: 0,
+      tax_amount: 0,
+      total: total1,
+      status: 'accepted',
+      valid_days: 60,
+      created_at: '2022-01-15',
+      sent_date: '2022-02-01',
+      accepted_date: '2022-02-28',
+      expiry_date: '2022-04-02',
+      notes: null,
+    },
+    {
+      id: 'est-002',
+      project_id: 'hartford-001',
+      project_name: '495 Hartford Apartments',
+      estimate_number: 'EST-2026-002',
+      title: 'Hartford - Phase 2 Amenity Deck Stucco',
+      client_name: 'Fassberg Construction Company',
+      client_address: '1441 W. 5th Street, Los Angeles, CA 90017',
+      scope_of_work: 'Furnish all labor, material, equipment, and scaffolding required for lath and plaster installation at the Phase 2 rooftop amenity deck walls. Scope includes approximately 2,400 square yards of exterior stucco with waterproofing additive at all amenity-level walls.\n\nFinish to match existing color coat specification (Sherwin-Williams).',
+      exclusions: '- Structural modifications\n- Roofing and waterproofing membrane\n- Electrical or plumbing penetrations\n- Overtime premium',
+      terms_and_conditions: 'Payment: Net 30 from certified pay application\nRetention: Per subcontract agreement (10%)\nPrice valid for 45 days from date of proposal\nWork to be performed during normal business hours\nAny changes to scope require written change order approval',
+      line_items: lineItems2,
+      subtotal: subtotal2,
+      markup_pct: 15,
+      markup_amount: markup2,
+      tax_pct: 0,
+      tax_amount: 0,
+      total: total2,
+      status: 'draft',
+      valid_days: 45,
+      created_at: '2026-02-20',
+      sent_date: null,
+      accepted_date: null,
+      expiry_date: null,
+      notes: 'Pending GC review of amenity deck structural drawings',
+    },
+  ]
+}
+
+function seedDropboxMappings(): ProjectDropboxMapping[] {
+  return [
+    {
+      project_id: 'hartford-001',
+      dropbox_folder_path: '/SWS Projects/495 Hartford Apartments',
+      linked_at: '2022-03-10',
+    },
+  ]
+}
+
+// Mock Dropbox file tree (not persisted, returned by demo API)
+export function getMockDropboxFiles(): DropboxFileEntry[] {
+  return [
+    {
+      id: 'dbx-1', name: 'Estimates', path_lower: '/sws projects/495 hartford apartments/estimates',
+      path_display: '/SWS Projects/495 Hartford Apartments/Estimates', type: 'folder', icon: 'folder',
+      children: [
+        { id: 'dbx-1a', name: 'HTF-Original-Bid.pdf', path_lower: '/sws projects/495 hartford apartments/estimates/htf-original-bid.pdf', path_display: '/SWS Projects/495 Hartford Apartments/Estimates/HTF-Original-Bid.pdf', type: 'file', size: 245000, modified: '2022-02-01', icon: 'pdf' },
+        { id: 'dbx-1b', name: 'HTF-CO12-Amenity-Walls.pdf', path_lower: '/sws projects/495 hartford apartments/estimates/htf-co12-amenity-walls.pdf', path_display: '/SWS Projects/495 Hartford Apartments/Estimates/HTF-CO12-Amenity-Walls.pdf', type: 'file', size: 189000, modified: '2024-06-26', icon: 'pdf' },
+      ],
+    },
+    {
+      id: 'dbx-2', name: 'Contracts', path_lower: '/sws projects/495 hartford apartments/contracts',
+      path_display: '/SWS Projects/495 Hartford Apartments/Contracts', type: 'folder', icon: 'folder',
+      children: [
+        { id: 'dbx-2a', name: 'Subcontract-Fassberg-SWS.pdf', path_lower: '/sws projects/495 hartford apartments/contracts/subcontract-fassberg-sws.pdf', path_display: '/SWS Projects/495 Hartford Apartments/Contracts/Subcontract-Fassberg-SWS.pdf', type: 'file', size: 520000, modified: '2022-03-01', icon: 'pdf' },
+        { id: 'dbx-2b', name: 'Insurance-Requirements.pdf', path_lower: '/sws projects/495 hartford apartments/contracts/insurance-requirements.pdf', path_display: '/SWS Projects/495 Hartford Apartments/Contracts/Insurance-Requirements.pdf', type: 'file', size: 98000, modified: '2022-03-01', icon: 'pdf' },
+      ],
+    },
+    {
+      id: 'dbx-3', name: 'Submittals', path_lower: '/sws projects/495 hartford apartments/submittals',
+      path_display: '/SWS Projects/495 Hartford Apartments/Submittals', type: 'folder', icon: 'folder',
+      children: [
+        { id: 'dbx-3a', name: 'Color-Samples-Sherwin-Williams.pdf', path_lower: '/sws projects/495 hartford apartments/submittals/color-samples-sherwin-williams.pdf', path_display: '/SWS Projects/495 Hartford Apartments/Submittals/Color-Samples-Sherwin-Williams.pdf', type: 'file', size: 1200000, modified: '2022-05-15', icon: 'pdf' },
+        { id: 'dbx-3b', name: 'Metal-Lath-Spec-Sheet.pdf', path_lower: '/sws projects/495 hartford apartments/submittals/metal-lath-spec-sheet.pdf', path_display: '/SWS Projects/495 Hartford Apartments/Submittals/Metal-Lath-Spec-Sheet.pdf', type: 'file', size: 340000, modified: '2022-04-20', icon: 'pdf' },
+      ],
+    },
+    {
+      id: 'dbx-4', name: 'Photos', path_lower: '/sws projects/495 hartford apartments/photos',
+      path_display: '/SWS Projects/495 Hartford Apartments/Photos', type: 'folder', icon: 'folder',
+      children: [
+        { id: 'dbx-4a', name: '2024-09-10-BrownCoat-BuildingA.jpg', path_lower: '/sws projects/495 hartford apartments/photos/2024-09-10-browncoat-buildinga.jpg', path_display: '/SWS Projects/495 Hartford Apartments/Photos/2024-09-10-BrownCoat-BuildingA.jpg', type: 'file', size: 3400000, modified: '2024-09-10', icon: 'image' },
+        { id: 'dbx-4b', name: '2024-09-14-Scaffold-NorthElev.jpg', path_lower: '/sws projects/495 hartford apartments/photos/2024-09-14-scaffold-northelev.jpg', path_display: '/SWS Projects/495 Hartford Apartments/Photos/2024-09-14-Scaffold-NorthElev.jpg', type: 'file', size: 2800000, modified: '2024-09-14', icon: 'image' },
+      ],
+    },
+    {
+      id: 'dbx-5', name: 'Change Orders', path_lower: '/sws projects/495 hartford apartments/change orders',
+      path_display: '/SWS Projects/495 Hartford Apartments/Change Orders', type: 'folder', icon: 'folder',
+      children: [
+        { id: 'dbx-5a', name: 'CO-01-Waterproofing.pdf', path_lower: '/sws projects/495 hartford apartments/change orders/co-01-waterproofing.pdf', path_display: '/SWS Projects/495 Hartford Apartments/Change Orders/CO-01-Waterproofing.pdf', type: 'file', size: 156000, modified: '2022-08-15', icon: 'pdf' },
+        { id: 'dbx-5b', name: 'CO-12-Amenity-Walls.pdf', path_lower: '/sws projects/495 hartford apartments/change orders/co-12-amenity-walls.pdf', path_display: '/SWS Projects/495 Hartford Apartments/Change Orders/CO-12-Amenity-Walls.pdf', type: 'file', size: 178000, modified: '2024-07-10', icon: 'pdf' },
+      ],
+    },
+    {
+      id: 'dbx-6', name: 'Close-out', path_lower: '/sws projects/495 hartford apartments/close-out',
+      path_display: '/SWS Projects/495 Hartford Apartments/Close-out', type: 'folder', icon: 'folder',
+      children: [],
+    },
+  ]
+}
+
 // ─── Store Operations ────────────────────────────────────────────────────────
 
 function loadData(): DemoData {
@@ -245,22 +390,34 @@ function loadData(): DemoData {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
+      let dirty = false
       // Migrate: add fieldUpdates if missing from older stored data
       if (!parsed.fieldUpdates) {
         parsed.fieldUpdates = seedFieldUpdates()
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+        dirty = true
       }
+      if (!parsed.estimates) {
+        parsed.estimates = seedEstimates()
+        dirty = true
+      }
+      if (!parsed.dropboxMappings) {
+        parsed.dropboxMappings = seedDropboxMappings()
+        dirty = true
+      }
+      if (dirty) localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
       return parsed as DemoData
     }
   } catch { /* corrupted data, re-seed */ }
 
-  const data = {
+  const data: DemoData = {
     projects: seedProjects(),
     invoices: seedInvoices(),
     changeOrders: seedChangeOrders(),
     lienReleases: seedLienReleases(),
     insurancePolicies: seedInsurancePolicies(),
     fieldUpdates: seedFieldUpdates(),
+    estimates: seedEstimates(),
+    dropboxMappings: seedDropboxMappings(),
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
   return data
@@ -753,6 +910,92 @@ function getRecentFieldUpdates() {
         created_at: fu.created_at,
       }
     })
+}
+
+// Estimates
+export function getEstimates(): Estimate[] {
+  return getData().estimates
+}
+
+export function getEstimate(id: string): Estimate | undefined {
+  return getData().estimates.find(e => e.id === id)
+}
+
+export function createEstimate(input: Omit<Estimate, 'id' | 'created_at'>): Estimate {
+  const estimate: Estimate = {
+    id: genId(),
+    ...input,
+    created_at: today(),
+  }
+  update(d => d.estimates.push(estimate))
+  return estimate
+}
+
+export function updateEstimate(id: string, input: Partial<Estimate>): Estimate {
+  const data = getData()
+  const est = data.estimates.find(e => e.id === id)
+  if (!est) throw new Error('Estimate not found')
+  Object.assign(est, input)
+  saveData(data)
+  return est
+}
+
+export function updateEstimateStatus(id: string, status: Estimate['status']): Estimate {
+  const data = getData()
+  const est = data.estimates.find(e => e.id === id)
+  if (!est) throw new Error('Estimate not found')
+  est.status = status
+  if (status === 'sent') {
+    est.sent_date = today()
+    const validDays = est.valid_days || 30
+    const expiry = new Date()
+    expiry.setDate(expiry.getDate() + validDays)
+    est.expiry_date = expiry.toISOString().split('T')[0]
+  } else if (status === 'accepted') {
+    est.accepted_date = today()
+  }
+  saveData(data)
+  return est
+}
+
+export function deleteEstimate(id: string): void {
+  update(d => {
+    d.estimates = d.estimates.filter(e => e.id !== id)
+  })
+}
+
+// Dropbox Mappings
+export function getDropboxMappings(): ProjectDropboxMapping[] {
+  return getData().dropboxMappings
+}
+
+export function getDropboxMapping(projectId: string): ProjectDropboxMapping | undefined {
+  return getData().dropboxMappings.find(m => m.project_id === projectId)
+}
+
+export function setDropboxMapping(projectId: string, folderPath: string): ProjectDropboxMapping {
+  const data = getData()
+  const existing = data.dropboxMappings.find(m => m.project_id === projectId)
+  if (existing) {
+    existing.dropbox_folder_path = folderPath
+    existing.linked_at = today()
+    saveData(data)
+    return existing
+  }
+  const mapping: ProjectDropboxMapping = {
+    project_id: projectId,
+    dropbox_folder_path: folderPath,
+    linked_at: today(),
+  }
+  data.dropboxMappings.push(mapping)
+  saveData(data)
+  return mapping
+}
+
+export function removeDropboxMapping(projectId: string): void {
+  update(d => {
+    d.dropboxMappings = d.dropboxMappings.filter(m => m.project_id !== projectId)
+  })
 }
 
 // Reset to seed data
