@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { DashboardData, Project, ProjectDashboard, Invoice, ChangeOrder, LienRelease, InsurancePolicy, FieldUpdate } from '../types'
+import type { DashboardData, Project, ProjectDashboard, Invoice, ChangeOrder, LienRelease, InsurancePolicy, FieldUpdate, Estimate, EstimateStatus, DropboxFileEntry, ProjectDropboxMapping } from '../types'
 import * as demo from './demoData'
 
 // Demo mode: when no API backend is available, use localStorage-backed data
@@ -211,6 +211,72 @@ export const apiCreateFieldUpdate = async (input: {
   if (DEMO_MODE) return demo.createFieldUpdate(input)
   const { data } = await api.post(`/projects/${input.project_id}/field_updates`, input)
   return data
+}
+
+// ─── Estimates ───────────────────────────────────────────────────────────────
+
+export const fetchEstimates = async (): Promise<Estimate[]> => {
+  if (DEMO_MODE) return demo.getEstimates()
+  const { data } = await api.get('/estimates')
+  return data
+}
+
+export const fetchEstimate = async (id: string): Promise<Estimate> => {
+  if (DEMO_MODE) return demo.getEstimate(id)!
+  const { data } = await api.get(`/estimates/${id}`)
+  return data
+}
+
+export const apiCreateEstimate = async (input: Omit<Estimate, 'id' | 'created_at'>): Promise<Estimate> => {
+  if (DEMO_MODE) return demo.createEstimate(input)
+  const { data } = await api.post('/estimates', input)
+  return data
+}
+
+export const apiUpdateEstimate = async (id: string, input: Partial<Estimate>): Promise<Estimate> => {
+  if (DEMO_MODE) return demo.updateEstimate(id, input)
+  const { data } = await api.put(`/estimates/${id}`, input)
+  return data
+}
+
+export const apiUpdateEstimateStatus = async (id: string, status: EstimateStatus): Promise<Estimate> => {
+  if (DEMO_MODE) return demo.updateEstimateStatus(id, status)
+  const { data } = await api.post(`/estimates/${id}/status`, { status })
+  return data
+}
+
+export const apiDeleteEstimate = async (id: string): Promise<void> => {
+  if (DEMO_MODE) return demo.deleteEstimate(id)
+  await api.delete(`/estimates/${id}`)
+}
+
+// ─── Dropbox ─────────────────────────────────────────────────────────────────
+
+export const fetchDropboxFiles = async (projectId: string): Promise<DropboxFileEntry[]> => {
+  if (DEMO_MODE) {
+    const mapping = demo.getDropboxMapping(projectId)
+    if (!mapping) return []
+    return demo.getMockDropboxFiles()
+  }
+  const { data } = await api.get(`/projects/${projectId}/dropbox/files`)
+  return data
+}
+
+export const fetchDropboxMappings = async (): Promise<ProjectDropboxMapping[]> => {
+  if (DEMO_MODE) return demo.getDropboxMappings()
+  const { data } = await api.get('/dropbox/mappings')
+  return data
+}
+
+export const apiSetDropboxMapping = async (projectId: string, folderPath: string): Promise<ProjectDropboxMapping> => {
+  if (DEMO_MODE) return demo.setDropboxMapping(projectId, folderPath)
+  const { data } = await api.post(`/projects/${projectId}/dropbox/link`, { folder_path: folderPath })
+  return data
+}
+
+export const apiRemoveDropboxMapping = async (projectId: string): Promise<void> => {
+  if (DEMO_MODE) return demo.removeDropboxMapping(projectId)
+  await api.delete(`/projects/${projectId}/dropbox/link`)
 }
 
 export const apiResetDemoData = () => {

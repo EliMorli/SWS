@@ -4,8 +4,9 @@ import { fetchProjectDashboard } from '../lib/api'
 import { formatCurrency, formatPercent, statusColor } from '../lib/format'
 import {
   ArrowLeft, FileText, GitPullRequest, ScrollText,
-  PieChart, Layers
+  PieChart, Layers, Calculator, FolderOpen
 } from 'lucide-react'
+import DropboxFileBrowser from '../components/dropbox/DropboxFileBrowser'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { FieldUpdatesFeed } from '../components/FieldUpdates'
 
@@ -72,6 +73,9 @@ export default function ProjectDetailPage() {
         </Link>
         <Link to={`/projects/${id}/lien-releases`} className="btn-primary flex items-center gap-2 text-sm">
           <ScrollText size={16} /> Lien Releases
+        </Link>
+        <Link to={`/estimates?project=${id}`} className="btn-primary flex items-center gap-2 text-sm">
+          <Calculator size={16} /> Estimates
         </Link>
       </div>
 
@@ -238,6 +242,17 @@ export default function ProjectDetailPage() {
               </div>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Project Files (Dropbox) */}
+      <div className="mt-6">
+        <div className="card">
+          <div className="flex items-center gap-2 mb-4">
+            <FolderOpen size={18} className="text-sws-gold" />
+            <h2 className="text-lg font-semibold text-sws-navy">Project Files</h2>
+          </div>
+          <DropboxFileBrowser projectId={id!} />
         </div>
       </div>
 

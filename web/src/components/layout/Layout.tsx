@@ -4,13 +4,15 @@ import { useAuthStore } from '../../lib/store'
 import { logout } from '../../lib/api'
 import {
   LayoutDashboard, FolderKanban, Shield, LogOut, Menu, X,
-  ChevronRight, User
+  ChevronRight, User, Calculator, Settings
 } from 'lucide-react'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
+  { name: 'Estimates', href: '/estimates', icon: Calculator },
   { name: 'Insurance', href: '/insurance', icon: Shield },
+  { name: 'Settings', href: '/settings/dropbox', icon: Settings },
 ]
 
 export default function Layout({ children }: { children: React.ReactNode }) {
